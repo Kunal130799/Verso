@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Header from './components/Header'
 import Footer from './components/Footer'
@@ -37,9 +38,27 @@ function ProtectedRoute({ children, skipConsentCheck = false }) {
   return children
 }
 
+// Globally redirects first-time users to consent gate after Google OAuth
+function ConsentGuard() {
+  const { user, profile, loading } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (loading || !user || !profile) return
+    const exempt = ['/consent', '/terms', '/privacy', '/guidelines', '/signin']
+    if (!profile.terms_accepted_at && !exempt.includes(location.pathname)) {
+      navigate('/consent', { replace: true })
+    }
+  }, [user, profile, loading, location.pathname, navigate])
+
+  return null
+}
+
 function AppShell() {
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink">
+      <ConsentGuard />
       <Header />
       <main className="flex-1">
         <Routes>
