@@ -16,6 +16,7 @@ import Settings from './pages/Settings'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
 import Guidelines from './pages/Guidelines'
+import AuthCallback from './pages/AuthCallback'
 
 function ProtectedRoute({ children, skipConsentCheck = false }) {
   const { user, loading, profile } = useAuth()
@@ -69,6 +70,7 @@ function AppShell() {
           <Route path="/guidelines" element={<Guidelines />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/tag/:slug" element={<TagPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/consent" element={
             <ProtectedRoute skipConsentCheck>
               <ConsentGate />
