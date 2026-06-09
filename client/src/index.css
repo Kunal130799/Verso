@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #FAF9F7;
+  --surface: #FFFFFF;
+  --text: #1A1A1A;
+  --text-muted: #6B6B6B;
+  --border: #E6E3DD;
+  --accent: #1F4E8C;
+  --accent-hover: #173C6B;
+}
+
+[data-theme="dark"] {
+  --bg: #15140F;
+  --surface: #1E1C17;
+  --text: #ECEAE3;
+  --text-muted: #9A958A;
+  --border: #2E2B25;
+  --accent: #7FB0EE;
+  --accent-hover: #A6C8F4;
+}
+
+* {
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Prose / reading styles — applied to post body and editor preview */
+.prose {
+  font-family: 'Newsreader', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.75;
+  color: var(--text);
+}
+.prose h1 { font-size: 2.2rem; font-weight: 500; margin: 2rem 0 1rem; line-height: 1.25; }
+.prose h2 { font-size: 1.55rem; font-weight: 600; margin: 1.75rem 0 0.75rem; line-height: 1.3; }
+.prose h3 { font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+.prose p  { margin: 1rem 0; }
+.prose ul, .prose ol { margin: 1rem 0; padding-left: 1.5rem; }
+.prose li { margin: 0.3rem 0; }
+.prose blockquote {
+  border-left: 3px solid var(--accent);
+  margin: 1.5rem 0;
+  padding: 0.25rem 0 0.25rem 1.25rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.prose code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-family: ui-monospace, 'Fira Code', monospace;
+  font-size: 0.875em;
+}
+.prose pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+.prose pre code { background: none; border: none; padding: 0; font-size: 0.9em; }
+.prose a { color: var(--accent); text-decoration: underline; }
+.prose a:hover { color: var(--accent-hover); }
+.prose img { max-width: 100%; border-radius: 8px; margin: 1.5rem 0; }
+.prose hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+.prose strong { font-weight: 600; }
+.prose em { font-style: italic; }
+.prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
+.prose th, .prose td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+.prose th { background: var(--surface); font-weight: 600; }
+
+/* Dark mode logo: invert the ink strokes */
+[data-theme="dark"] .logo-mark { filter: invert(1) hue-rotate(180deg) brightness(1.5); }

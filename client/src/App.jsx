@@ -1,0 +1,79 @@
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import Header from './components/Header'
+import Footer from './components/Footer'
+import Home from './pages/Home'
+import SignIn from './pages/SignIn'
+import ConsentGate from './pages/ConsentGate'
+import WritePage from './pages/WritePage'
+import MyPosts from './pages/MyPosts'
+import PostPage from './pages/PostPage'
+import ProfilePage from './pages/ProfilePage'
+import TagPage from './pages/TagPage'
+import SearchResults from './pages/SearchResults'
+import Settings from './pages/Settings'
+import Terms from './pages/Terms'
+import Privacy from './pages/Privacy'
+import Guidelines from './pages/Guidelines'
+
+function ProtectedRoute({ children, skipConsentCheck = false }) {
+  const { user, loading, profile } = useAuth()
+  const location = useLocation()
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <span className="text-faint text-sm">Loading…</span>
+      </div>
+    )
+  }
+
+  if (!user) return <Navigate to="/signin" state={{ from: location }} replace />
+
+  if (!skipConsentCheck && profile !== undefined && !profile?.terms_accepted_at) {
+    return <Navigate to="/consent" replace />
+  }
+
+  return children
+}
+
+function AppShell() {
+  return (
+    <div className="min-h-screen flex flex-col bg-paper text-ink">
+      <Header />
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/guidelines" element={<Guidelines />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/tag/:slug" element={<TagPage />} />
+          <Route path="/consent" element={
+            <ProtectedRoute skipConsentCheck>
+              <ConsentGate />
+            </ProtectedRoute>
+          } />
+          <Route path="/write" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
+          <Route path="/write/:id" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
+          <Route path="/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/@:username/:slug" element={<PostPage />} />
+          <Route path="/@:username" element={<ProfilePage />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppShell />
+      </AuthProvider>
+    </BrowserRouter>
+  )
+}
