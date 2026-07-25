@@ -8,10 +8,10 @@ function formatDate(iso) {
 export default function PostCard({ post }) {
   const author = post.author || post.profiles
   const tags = post.post_tags?.map(pt => pt.tags).filter(Boolean) || []
-  const href = `/@${author?.username}/${post.slug}`
+  const href = `/posts/${post.slug}`
 
   return (
-    <article className="py-8 border-b border-wire last:border-0">
+    <article className="spine py-8 border-b border-wire last:border-0">
       <div className="flex gap-6 items-start">
         <div className="flex-1 min-w-0">
           {/* Author row */}
@@ -20,7 +20,7 @@ export default function PostCard({ post }) {
               <img src={author.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" />
             )}
             <Link
-              to={`/@${author?.username}`}
+              to={`/u/${author?.username}`}
               className="text-faint text-sm font-sans hover:text-ink transition-colors"
             >
               {author?.display_name || author?.username}

@@ -11,6 +11,7 @@ export default {
         wire: 'var(--border)',
         accent: 'var(--accent)',
         'accent-hi': 'var(--accent-hover)',
+        signature: 'var(--signature)',
       },
       fontFamily: {
         serif: ['Newsreader', 'Georgia', 'serif'],

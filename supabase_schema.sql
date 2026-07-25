@@ -32,7 +32,7 @@ create table if not exists public.posts (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   published_at timestamptz,
-  unique (author_id, slug)
+  unique (slug)
 );
 
 create index if not exists posts_status_published_idx on public.posts (status, published_at desc);

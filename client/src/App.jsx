@@ -80,8 +80,8 @@ function AppShell() {
           <Route path="/write/:id" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
           <Route path="/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/@:username/:slug" element={<PostPage />} />
-          <Route path="/@:username" element={<ProfilePage />} />
+          <Route path="/posts/:slug" element={<PostPage />} />
+          <Route path="/u/:username" element={<ProfilePage />} />
         </Routes>
       </main>
       <Footer />

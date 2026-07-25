@@ -14,11 +14,11 @@ function readingTime(content) {
   return Math.max(1, Math.round((content || '').trim().split(/\s+/).length / 200))
 }
 
-async function uniqueSlug(authorId, baseSlug, excludeId = null) {
+async function uniqueSlug(baseSlug, excludeId = null) {
   let slug = baseSlug
   let n = 1
   while (true) {
-    const q = supabase.from('posts').select('id').eq('author_id', authorId).eq('slug', slug)
+    const q = supabase.from('posts').select('id').eq('slug', slug)
     if (excludeId) q.neq('id', excludeId)
     const { data } = await q.maybeSingle()
     if (!data) return slug
@@ -49,20 +49,14 @@ router.get('/', async (req, res) => {
   res.json({ posts: data, total: count, page, limit })
 })
 
-// GET /api/posts/by-slug/:username/:slug — must be before /:id
-router.get('/by-slug/:username/:slug', optionalAuth, async (req, res) => {
-  const { username, slug } = req.params
-
-  const { data: profile } = await supabase
-    .from('profiles').select('id').eq('username', username).maybeSingle()
-
-  if (!profile) return res.status(404).json({ error: 'Not found' })
+// GET /api/posts/by-slug/:slug — must be before /:id
+router.get('/by-slug/:slug', optionalAuth, async (req, res) => {
+  const { slug } = req.params
 
   const { data: post, error } = await supabase
     .from('posts')
     .select('*, profiles!author_id(id, username, display_name, avatar_url, bio), post_tags(tags(id, name, slug))')
     .eq('slug', slug)
-    .eq('author_id', profile.id)
     .maybeSingle()
 
   if (error || !post) return res.status(404).json({ error: 'Not found' })
@@ -108,7 +102,7 @@ router.post('/', requireAuth, async (req, res) => {
   const { title, content = '', status = 'draft', excerpt = '', tags = [] } = req.body
   if (!title?.trim()) return res.status(400).json({ error: 'Title is required' })
 
-  const slug = await uniqueSlug(req.user.id, toSlug(title))
+  const slug = await uniqueSlug(toSlug(title))
 
   const { data: post, error } = await supabase
     .from('posts')

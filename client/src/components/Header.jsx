@@ -21,13 +21,16 @@ export default function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-wire"
+      className="sticky top-0 z-50 rule-double"
       style={{ backgroundColor: 'var(--bg)' }}
     >
-      <div className="max-w-wide mx-auto px-6 h-14 flex items-center gap-4">
+      <div className="max-w-wide mx-auto px-6 h-16 flex items-center gap-4">
         {/* Logo */}
-        <Link to="/" className="flex-shrink-0 flex items-center">
+        <Link to="/" className="flex-shrink-0 flex items-center gap-2">
           <img src="/verso-logo.svg" alt="Verso" className="h-7 logo-mark" />
+          <span className="hidden md:block text-xs font-sans tracking-[0.2em] uppercase text-faint">
+            A quieter place
+          </span>
         </Link>
 
         {/* Search */}
@@ -57,7 +60,7 @@ export default function Header() {
                 My Posts
               </Link>
               {profile?.username && (
-                <Link to={`/@${profile.username}`} className="hidden sm:block">
+                <Link to={`/u/${profile.username}`} className="hidden sm:block">
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover border border-wire" />
                   ) : (

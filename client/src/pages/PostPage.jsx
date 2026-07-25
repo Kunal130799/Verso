@@ -12,7 +12,7 @@ function formatDate(iso) {
 }
 
 export default function PostPage() {
-  const { username, slug } = useParams()
+  const { slug } = useParams()
   const { user, getToken, profile } = useAuth()
   const navigate = useNavigate()
   const [post, setPost] = useState(null)
@@ -25,7 +25,7 @@ export default function PostPage() {
       try {
         const token = await getToken()
         const data = await api.get(
-          `/api/posts/by-slug/${encodeURIComponent(username)}/${encodeURIComponent(slug)}`,
+          `/api/posts/by-slug/${encodeURIComponent(slug)}`,
           token
         )
         setPost(data)
@@ -38,7 +38,7 @@ export default function PostPage() {
       }
     }
     load()
-  }, [username, slug]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [slug]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Increment view count once per session
   useEffect(() => {
@@ -92,7 +92,7 @@ export default function PostPage() {
           {post.title}
         </h1>
         <div className="flex items-center gap-3 flex-wrap">
-          <Link to={`/@${author?.username}`} className="flex items-center gap-2 group">
+          <Link to={`/u/${author?.username}`} className="flex items-center gap-2 group">
             {author?.avatar_url ? (
               <img src={author.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
             ) : (
@@ -150,7 +150,7 @@ export default function PostPage() {
       {/* Footer */}
       <footer className="mt-14 pt-8 border-t border-wire">
         <Link
-          to={`/@${author?.username}`}
+          to={`/u/${author?.username}`}
           className="flex items-center gap-3 group w-fit"
         >
           {author?.avatar_url ? (

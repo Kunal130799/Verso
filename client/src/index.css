@@ -10,6 +10,7 @@
   --border: #E6E3DD;
   --accent: #1F4E8C;
   --accent-hover: #173C6B;
+  --signature: #8C3B3B;
 }
 
 [data-theme="dark"] {
@@ -20,6 +21,34 @@
   --border: #2E2B25;
   --accent: #7FB0EE;
   --accent-hover: #A6C8F4;
+  --signature: #C97A6D;
+}
+
+/* Title-page double rule — used under the masthead/header */
+.rule-double {
+  box-shadow: 0 1px 0 var(--border), 0 5px 0 -3px var(--border);
+}
+
+/* Spine — a ribbon-bookmark accent that appears on hover */
+.spine {
+  position: relative;
+}
+.spine::before {
+  content: '';
+  position: absolute;
+  left: -1.25rem;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  width: 2px;
+  background: var(--signature);
+  opacity: 0;
+  transform: scaleY(0.4);
+  transform-origin: top;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.spine:hover::before {
+  opacity: 1;
+  transform: scaleY(1);
 }
 
 * {
