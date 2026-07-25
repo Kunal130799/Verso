@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Header from './components/Header'
@@ -56,6 +56,25 @@ function ConsentGuard() {
   return null
 }
 
+// Catches old /@username/slug and /@username links (retired routing scheme) and
+// anything else unmatched, redirecting where possible instead of rendering blank.
+function NotFoundOrLegacyRedirect() {
+  const location = useLocation()
+  const legacy = location.pathname.match(/^\/@([^/]+)(?:\/([^/]+))?\/?$/)
+
+  if (legacy) {
+    const [, username, slug] = legacy
+    return <Navigate to={slug ? `/posts/${slug}` : `/u/${username}`} replace />
+  }
+
+  return (
+    <div className="max-w-feed mx-auto px-6 py-24 text-center">
+      <p className="font-serif text-2xl text-faint mb-4">Page not found.</p>
+      <Link to="/" className="text-sm font-sans text-accent hover:text-accent-hi transition-colors">← Back home</Link>
+    </div>
+  )
+}
+
 function AppShell() {
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink">
@@ -82,6 +101,7 @@ function AppShell() {
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/posts/:slug" element={<PostPage />} />
           <Route path="/u/:username" element={<ProfilePage />} />
+          <Route path="*" element={<NotFoundOrLegacyRedirect />} />
         </Routes>
       </main>
       <Footer />
