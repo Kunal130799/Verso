@@ -18,6 +18,7 @@ export default function PostPage() {
   const [post, setPost] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const load = async () => {
@@ -31,6 +32,7 @@ export default function PostPage() {
         document.title = `${data.title} — Verso`
       } catch (err) {
         if (err.status === 404) setNotFound(true)
+        else setError(err.message || 'Something went wrong loading this post.')
       } finally {
         setLoading(false)
       }
@@ -53,6 +55,15 @@ export default function PostPage() {
     return (
       <div className="max-w-feed mx-auto px-6 py-24 text-center">
         <p className="font-serif text-2xl text-faint mb-4">Post not found.</p>
+        <Link to="/" className="text-sm font-sans text-accent hover:text-accent-hi transition-colors">← Back home</Link>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-feed mx-auto px-6 py-24 text-center">
+        <p className="font-serif text-2xl text-faint mb-4">{error}</p>
         <Link to="/" className="text-sm font-sans text-accent hover:text-accent-hi transition-colors">← Back home</Link>
       </div>
     )
