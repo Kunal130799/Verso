@@ -31,22 +31,12 @@ export default function Home() {
   }, [page])
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
-  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
-  const rangeEnd = Math.min(page * PAGE_SIZE, total)
 
   return (
-    <div className="max-w-wide mx-auto px-6">
-      {/* Masthead */}
-      <div className="rule-double pt-14 pb-8 mb-10">
-        <p className="text-xs font-sans tracking-[0.2em] uppercase text-faint mb-3">Volume I</p>
-        <h1 className="font-serif italic text-4xl sm:text-5xl font-medium text-ink leading-tight max-w-reading">
-          Long-form, unhurried.
-        </h1>
-        {total > 0 && (
-          <p className="text-faint text-sm font-sans mt-4">
-            No. {String(rangeStart).padStart(3, '0')}–{String(rangeEnd).padStart(3, '0')} of {total}
-          </p>
-        )}
+    <div className="max-w-wide mx-auto px-6 py-12">
+      <div className="mb-10">
+        <h1 className="font-serif text-3xl font-medium text-ink mb-1">Latest</h1>
+        <p className="text-faint text-sm font-sans">Public posts from all writers on Verso.</p>
       </div>
 
       <div className="lg:grid lg:grid-cols-[minmax(0,680px)_1fr] lg:gap-16">
