@@ -48,7 +48,10 @@ export function AuthProvider({ children }) {
 
   const signOut = () => supabase.auth.signOut()
 
-  const getToken = () => session?.access_token ?? null
+  const getToken = async () => {
+    const { data: { session: current } } = await supabase.auth.getSession()
+    return current?.access_token ?? null
+  }
 
   const refreshProfile = () => fetchProfile(session?.access_token)
 

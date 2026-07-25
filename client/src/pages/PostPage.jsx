@@ -22,7 +22,7 @@ export default function PostPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const token = getToken()
+        const token = await getToken()
         const data = await api.get(
           `/api/posts/by-slug/${encodeURIComponent(username)}/${encodeURIComponent(slug)}`,
           token

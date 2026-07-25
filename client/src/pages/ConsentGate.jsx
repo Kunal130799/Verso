@@ -14,7 +14,7 @@ export default function ConsentGate() {
     if (!checked) return
     setLoading(true)
     try {
-      const token = getToken()
+      const token = await getToken()
       await api.post('/api/me/accept-terms', {}, token)
       await refreshProfile()
       navigate('/', { replace: true })

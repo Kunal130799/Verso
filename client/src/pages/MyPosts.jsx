@@ -20,18 +20,19 @@ export default function MyPosts() {
   }, [])
 
   useEffect(() => {
-    const token = getToken()
-    api.get('/api/my-posts', token)
-      .then(data => setPosts(data.posts))
-      .catch(() => setPosts([]))
-      .finally(() => setLoading(false))
+    getToken().then(token =>
+      api.get('/api/my-posts', token)
+        .then(data => setPosts(data.posts))
+        .catch(() => setPosts([]))
+        .finally(() => setLoading(false))
+    )
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDelete = async (id, title) => {
     if (!window.confirm(`Delete "${title}"? This can't be undone.`)) return
     setDeleting(id)
     try {
-      const token = getToken()
+      const token = await getToken()
       await api.delete(`/api/posts/${id}`, token)
       setPosts(posts.filter(p => p.id !== id))
     } catch (err) {

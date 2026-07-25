@@ -30,7 +30,7 @@ export default function WritePage() {
     if (!id) return
     const load = async () => {
       try {
-        const token = getToken()
+        const token = await getToken()
         const post = await api.get(`/api/posts/${id}`, token)
         setTitle(post.title)
         setContent(post.content)
@@ -52,7 +52,7 @@ export default function WritePage() {
     const timer = setTimeout(async () => {
       setAutosaveStatus('saving')
       try {
-        const token = getToken()
+        const token = await getToken()
         if (!postIdRef.current) {
           const post = await api.post('/api/posts', { title, content, status: 'draft', excerpt, tags }, token)
           postIdRef.current = post.id
@@ -79,7 +79,7 @@ export default function WritePage() {
     setSaving(true)
     setError(null)
     try {
-      const token = getToken()
+      const token = await getToken()
       const payload = { title, content, status: targetStatus, excerpt, tags }
       if (postIdRef.current) {
         await api.put(`/api/posts/${postIdRef.current}`, payload, token)
@@ -113,7 +113,7 @@ export default function WritePage() {
     try {
       const formData = new FormData()
       formData.append('cover', file)
-      const token = getToken()
+      const token = await getToken()
       const data = await api.upload(`/api/posts/${postIdRef.current}/cover`, formData, token)
       setCover(data.cover_image_url)
     } catch (err) {

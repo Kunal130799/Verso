@@ -34,7 +34,7 @@ export default function Settings() {
     setSaveMsg(null)
     setSaveError(null)
     try {
-      const token = getToken()
+      const token = await getToken()
       const updates = { display_name: displayName, bio }
       if (username !== profile?.username) updates.username = username
       const updated = await api.put('/api/me', updates, token)
@@ -52,7 +52,7 @@ export default function Settings() {
     if (deleteStep < 2) { setDeleteStep(s => s + 1); return }
     setDeleting(true)
     try {
-      const token = getToken()
+      const token = await getToken()
       await api.delete('/api/me', token)
       await signOut()
       navigate('/', { replace: true })
