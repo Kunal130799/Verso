@@ -67,6 +67,15 @@ router.get('/by-slug/:slug', optionalAuth, async (req, res) => {
   }
 
   post.related = await relatedPosts(post)
+
+  if (req.user) {
+    const { data: bookmark } = await supabase
+      .from('bookmarks').select('post_id').eq('user_id', req.user.id).eq('post_id', post.id).maybeSingle()
+    post.is_bookmarked = !!bookmark
+  } else {
+    post.is_bookmarked = false
+  }
+
   res.json(post)
 })
 

@@ -15,6 +15,7 @@ import ProfilePage from './pages/ProfilePage'
 import TagPage from './pages/TagPage'
 import SearchResults from './pages/SearchResults'
 import Settings from './pages/Settings'
+import Bookmarks from './pages/Bookmarks'
 import About from './pages/About'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
@@ -128,6 +129,7 @@ function AppShell() {
             <Route path="/write/:id" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
             <Route path="/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
             <Route path="/posts/:slug" element={<PostPage />} />
             <Route path="/u/:username" element={<ProfilePage />} />
             <Route path="/profile/:username" element={<ProfileRedirect />} />

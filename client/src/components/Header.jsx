@@ -73,6 +73,9 @@ export default function Header({ onMenuClick, showMenuButton }) {
               <Link to="/my-posts" className="text-sm text-faint hover:text-signature transition-colors font-sans hidden sm:block">
                 My Posts
               </Link>
+              <Link to="/bookmarks" className="text-sm text-faint hover:text-signature transition-colors font-sans hidden sm:block">
+                Bookmarks
+              </Link>
               <Link to="/settings" className="text-sm text-faint hover:text-signature transition-colors font-sans hidden sm:block">
                 Settings
               </Link>

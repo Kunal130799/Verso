@@ -6,6 +6,7 @@ import { api } from '../lib/api'
 import { PostPageSkeleton } from '../components/LoadingSkeleton'
 import ListenBar from '../components/ListenBar'
 import ShareButton from '../components/ShareButton'
+import BookmarkButton from '../components/BookmarkButton'
 import { markdownRemarkPlugins, markdownRehypePlugins, markdownComponents } from '../lib/markdown'
 import { setPageMeta } from '../lib/meta'
 
@@ -117,6 +118,7 @@ export default function PostPage() {
                   Edit
                 </Link>
               )}
+              <BookmarkButton postId={post.id} initialBookmarked={post.is_bookmarked} />
               <ShareButton title={post.title} url={`${window.location.origin}/posts/${post.slug}`} />
             </div>
           </div>

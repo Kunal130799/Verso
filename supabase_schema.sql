@@ -110,3 +110,18 @@ create policy "post_tags readable" on public.post_tags for select using (true);
 -- 8. Storage bucket for covers (run in Supabase dashboard or here)
 -- insert into storage.buckets (id, name, public) values ('covers', 'covers', true)
 -- on conflict do nothing;
+
+-- 9. BOOKMARKS
+create table if not exists public.bookmarks (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  post_id uuid not null references public.posts(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, post_id)
+);
+
+create index if not exists bookmarks_user_idx on public.bookmarks (user_id, created_at desc);
+
+alter table public.bookmarks enable row level security;
+
+create policy "users manage own bookmarks" on public.bookmarks
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

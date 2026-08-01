@@ -8,6 +8,7 @@ import profileRouter from './routes/profile.js'
 import searchRouter  from './routes/search.js'
 import tagsRouter    from './routes/tags.js'
 import feedRouter    from './routes/feed.js'
+import bookmarksRouter from './routes/bookmarks.js'
 import { apiLimiter } from './middleware/rateLimit.js'
 
 const app  = express()
@@ -36,6 +37,7 @@ app.use('/api',         usersRouter)
 app.use('/api/profile', profileRouter)
 app.use('/api/search',  searchRouter)
 app.use('/api/tags',    tagsRouter)
+app.use('/api/bookmarks', bookmarksRouter)
 app.use(feedRouter)
 
 app.get('/health', async (_req, res) => {
