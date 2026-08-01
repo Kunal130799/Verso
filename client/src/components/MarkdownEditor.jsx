@@ -1,16 +1,29 @@
 import { useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeSanitize from 'rehype-sanitize'
+import { markdownRemarkPlugins, markdownRehypePlugins, markdownComponents } from '../lib/markdown'
+
+const CODE_LANGUAGES = [
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'python', label: 'Python' },
+  { value: 'html', label: 'HTML' },
+  { value: 'css', label: 'CSS' },
+  { value: 'json', label: 'JSON' },
+  { value: 'bash', label: 'Bash' },
+  { value: 'java', label: 'Java' },
+  { value: 'cpp', label: 'C++' },
+  { value: 'sql', label: 'SQL' },
+]
 
 export default function MarkdownEditor({ value, onChange, placeholder = 'Write in Markdown…', onUploadImage, imagesEnabled }) {
   const [tab, setTab] = useState('write')
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState(null)
+  const [codeLang, setCodeLang] = useState('javascript')
   const activeTextareaRef = useRef(null)
   const fileInputRef = useRef(null)
 
-  const insertAtCursor = text => {
+  const insertAtCursor = (text, cursorOffset = text.length) => {
     const el = activeTextareaRef.current
     if (!el) { onChange(`${value}\n${text}\n`); return }
     const start = el.selectionStart
@@ -18,7 +31,7 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
     onChange(value.slice(0, start) + text + value.slice(end))
     requestAnimationFrame(() => {
       el.focus()
-      el.selectionStart = el.selectionEnd = start + text.length
+      el.selectionStart = el.selectionEnd = start + cursorOffset
     })
   }
 
@@ -38,8 +51,13 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
     }
   }
 
+  const insertCodeBlock = () => {
+    const opening = '```' + codeLang + '\n'
+    insertAtCursor(opening + '\n```', opening.length)
+  }
+
   const toolbar = (
-    <div className="flex items-center gap-3 px-3 py-2 border-b border-wire bg-surface">
+    <div className="flex items-center gap-3 px-3 py-2 border-b border-wire bg-surface flex-wrap">
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
@@ -51,6 +69,25 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
         {uploading ? 'Uploading…' : 'Insert image'}
       </button>
       {uploadError && <span className="text-xs text-red-400 font-sans">{uploadError}</span>}
+
+      <span className="w-px h-4 bg-wire" />
+
+      <select
+        value={codeLang}
+        onChange={e => setCodeLang(e.target.value)}
+        className="text-xs font-sans bg-transparent border border-wire rounded px-1.5 py-1 text-faint focus:outline-none focus:border-accent"
+      >
+        {CODE_LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+      </select>
+      <button
+        type="button"
+        onClick={insertCodeBlock}
+        className="inline-flex items-center gap-1.5 text-xs font-sans text-faint hover:text-ink transition-colors"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Insert code block
+      </button>
+
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImagePick} />
     </div>
   )
@@ -59,7 +96,11 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
     <div className="p-5 overflow-y-auto bg-surface h-full">
       {value ? (
         <div className="prose max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
+          <ReactMarkdown
+            remarkPlugins={markdownRemarkPlugins}
+            rehypePlugins={markdownRehypePlugins}
+            components={markdownComponents}
+          >
             {value}
           </ReactMarkdown>
         </div>

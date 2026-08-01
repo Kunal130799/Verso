@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeSanitize from 'rehype-sanitize'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
 import { PostPageSkeleton } from '../components/LoadingSkeleton'
 import ListenBar from '../components/ListenBar'
+import { markdownRemarkPlugins, markdownRehypePlugins, markdownComponents } from '../lib/markdown'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -141,7 +140,11 @@ export default function PostPage() {
       {/* Body */}
       <div className="max-w-feed mx-auto px-6 py-10">
         <div className="prose max-w-none">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
+          <ReactMarkdown
+            remarkPlugins={markdownRemarkPlugins}
+            rehypePlugins={markdownRehypePlugins}
+            components={markdownComponents}
+          >
             {post.content}
           </ReactMarkdown>
         </div>
