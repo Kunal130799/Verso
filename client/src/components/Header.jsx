@@ -73,6 +73,9 @@ export default function Header({ onMenuClick, showMenuButton }) {
               <Link to="/my-posts" className="text-sm text-faint hover:text-signature transition-colors font-sans hidden sm:block">
                 My Posts
               </Link>
+              <Link to="/settings" className="text-sm text-faint hover:text-signature transition-colors font-sans hidden sm:block">
+                Settings
+              </Link>
               {profile?.username && (
                 <Link to={`/u/${profile.username}`} className="hidden sm:block">
                   {profile.avatar_url ? (
