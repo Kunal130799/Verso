@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import ThemeToggle from './ThemeToggle'
 
-export default function Header() {
+export default function Header({ onMenuClick }) {
   const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -25,6 +25,17 @@ export default function Header() {
       style={{ backgroundColor: 'var(--surface)' }}
     >
       <div className="max-w-wide mx-auto px-6 h-16 flex items-center gap-4">
+        {/* Sidebar toggle (mobile/tablet only) */}
+        <button
+          onClick={onMenuClick}
+          aria-label="Toggle navigation"
+          className="lg:hidden p-1.5 -ml-1.5 rounded text-faint hover:text-signature transition-colors"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" />
+          </svg>
+        </button>
+
         {/* Logo */}
         <Link to="/" className="flex-shrink-0 flex items-center gap-2">
           <img src="/verso-logo.png" alt="Verso" className="h-7 w-auto logo-light" />

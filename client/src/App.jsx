@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import Sidebar from './components/Sidebar'
 import Home from './pages/Home'
 import SignIn from './pages/SignIn'
 import ConsentGate from './pages/ConsentGate'
@@ -13,6 +14,7 @@ import ProfilePage from './pages/ProfilePage'
 import TagPage from './pages/TagPage'
 import SearchResults from './pages/SearchResults'
 import Settings from './pages/Settings'
+import About from './pages/About'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
 import Guidelines from './pages/Guidelines'
@@ -47,7 +49,7 @@ function ConsentGuard() {
 
   useEffect(() => {
     if (loading || !user || !profile) return
-    const exempt = ['/consent', '/terms', '/privacy', '/guidelines', '/signin']
+    const exempt = ['/consent', '/terms', '/privacy', '/guidelines', '/about', '/signin']
     if (!profile.terms_accepted_at && !exempt.includes(location.pathname)) {
       navigate('/consent', { replace: true })
     }
@@ -76,34 +78,43 @@ function NotFoundOrLegacyRedirect() {
 }
 
 function AppShell() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const location = useLocation()
+
+  useEffect(() => setSidebarOpen(false), [location.pathname])
+
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink">
       <ConsentGuard />
-      <Header />
-      <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/guidelines" element={<Guidelines />} />
-          <Route path="/search" element={<SearchResults />} />
-          <Route path="/tag/:slug" element={<TagPage />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/consent" element={
-            <ProtectedRoute skipConsentCheck>
-              <ConsentGate />
-            </ProtectedRoute>
-          } />
-          <Route path="/write" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
-          <Route path="/write/:id" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
-          <Route path="/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/posts/:slug" element={<PostPage />} />
-          <Route path="/u/:username" element={<ProfilePage />} />
-          <Route path="*" element={<NotFoundOrLegacyRedirect />} />
-        </Routes>
-      </main>
+      <Header onMenuClick={() => setSidebarOpen(o => !o)} />
+      <div className="flex-1 flex items-start">
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <main className="flex-1 min-w-0">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/guidelines" element={<Guidelines />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/tag/:slug" element={<TagPage />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/consent" element={
+              <ProtectedRoute skipConsentCheck>
+                <ConsentGate />
+              </ProtectedRoute>
+            } />
+            <Route path="/write" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
+            <Route path="/write/:id" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
+            <Route path="/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/posts/:slug" element={<PostPage />} />
+            <Route path="/u/:username" element={<ProfilePage />} />
+            <Route path="*" element={<NotFoundOrLegacyRedirect />} />
+          </Routes>
+        </main>
+      </div>
       <Footer />
     </div>
   )
