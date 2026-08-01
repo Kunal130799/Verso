@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import PostCard from '../components/PostCard'
 import ShareButton from '../components/ShareButton'
 import { PostCardSkeleton } from '../components/LoadingSkeleton'
+import { setPageMeta } from '../lib/meta'
 
 function formatJoinDate(iso) {
   if (!iso) return ''
@@ -22,7 +23,14 @@ export default function ProfilePage() {
       .then(data => {
         setProfile(data.profile)
         setPosts(data.posts)
-        document.title = `${data.profile.display_name || data.profile.username} — Verso`
+        const name = data.profile.display_name || data.profile.username
+        setPageMeta({
+          title: `${name} — Verso`,
+          description: data.profile.bio || `${name}'s posts on Verso.`,
+          image: data.profile.avatar_url,
+          url: `${window.location.origin}/u/${data.profile.username}`,
+          type: 'profile',
+        })
       })
       .catch(err => {
         if (err.status === 404) setNotFound(true)

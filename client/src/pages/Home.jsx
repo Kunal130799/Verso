@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import PostCard from '../components/PostCard'
 import TopContributors from '../components/TopContributors'
 import { PostCardSkeleton } from '../components/LoadingSkeleton'
+import { setPageMeta } from '../lib/meta'
 
 const PAGE_SIZE = 20
 
@@ -16,7 +17,13 @@ export default function Home() {
   const [tags, setTags] = useState([])
 
   useEffect(() => {
-    document.title = 'Verso — A quieter place to write.'
+    setPageMeta({
+      title: 'Verso — A quieter place to write.',
+      description: 'Public posts from writers who have something worth reading.',
+      image: `${window.location.origin}/og-image.png`,
+      url: window.location.origin,
+      type: 'website',
+    })
     api.get('/api/tags').then(data => setTags(data.tags)).catch(() => setTags([]))
   }, [])
 

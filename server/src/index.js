@@ -7,6 +7,7 @@ import usersRouter  from './routes/users.js'
 import profileRouter from './routes/profile.js'
 import searchRouter  from './routes/search.js'
 import tagsRouter    from './routes/tags.js'
+import feedRouter    from './routes/feed.js'
 
 const app  = express()
 const PORT = process.env.PORT || 3001
@@ -28,6 +29,7 @@ app.use('/api',         usersRouter)
 app.use('/api/profile', profileRouter)
 app.use('/api/search',  searchRouter)
 app.use('/api/tags',    tagsRouter)
+app.use(feedRouter)
 
 app.get('/health', async (_req, res) => {
   try {

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import PostCard from '../components/PostCard'
 import { PostCardSkeleton } from '../components/LoadingSkeleton'
+import { setPageMeta } from '../lib/meta'
 
 export default function TagPage() {
   const { slug } = useParams()
@@ -16,7 +17,12 @@ export default function TagPage() {
       .then(data => {
         setTag(data.tag)
         setPosts(data.posts)
-        document.title = `#${data.tag.name} — Verso`
+        setPageMeta({
+          title: `#${data.tag.name} — Verso`,
+          description: `Posts tagged #${data.tag.name} on Verso.`,
+          url: `${window.location.origin}/tag/${data.tag.slug}`,
+          type: 'website',
+        })
       })
       .catch(err => {
         if (err.status === 404) setNotFound(true)

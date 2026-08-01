@@ -7,6 +7,7 @@ import { PostPageSkeleton } from '../components/LoadingSkeleton'
 import ListenBar from '../components/ListenBar'
 import ShareButton from '../components/ShareButton'
 import { markdownRemarkPlugins, markdownRehypePlugins, markdownComponents } from '../lib/markdown'
+import { setPageMeta } from '../lib/meta'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -29,7 +30,12 @@ export default function PostPage() {
           token
         )
         setPost(data)
-        document.title = `${data.title} — Verso`
+        setPageMeta({
+          title: `${data.title} — Verso`,
+          description: data.excerpt || data.title,
+          image: data.cover_image_url,
+          url: `${window.location.origin}/posts/${data.slug}`,
+        })
       } catch (err) {
         if (err.status === 404) setNotFound(true)
         else setError(err.message || 'Something went wrong loading this post.')
