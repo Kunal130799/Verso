@@ -13,9 +13,10 @@
   --signature: #ec5fb0;
 }
 
-/* Title-page double rule — used under the masthead/header */
-.rule-double {
-  box-shadow: 0 1px 0 var(--border), 0 5px 0 -3px var(--border);
+/* Ribbon rule — the spine's cyan-to-pink gradient, bookending header and footer */
+.rule-ribbon {
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--signature));
 }
 
 /* Spine — a ribbon-bookmark accent that appears on hover */

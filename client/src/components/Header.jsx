@@ -20,8 +20,8 @@ export default function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 rule-double"
-      style={{ backgroundColor: 'var(--bg)' }}
+      className="sticky top-0 z-50"
+      style={{ backgroundColor: 'var(--surface)' }}
     >
       <div className="max-w-wide mx-auto px-6 h-16 flex items-center gap-4">
         {/* Logo */}
@@ -38,7 +38,7 @@ export default function Header() {
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder="Search posts…"
-            className="w-full px-3 py-1.5 text-sm bg-surface border border-wire rounded-md text-ink placeholder:text-faint focus:outline-none focus:border-accent transition-colors"
+            className="w-full px-3 py-1.5 text-sm bg-paper border border-wire rounded-md text-ink placeholder:text-faint focus:outline-none focus:border-accent transition-colors"
           />
         </form>
 
@@ -47,14 +47,14 @@ export default function Header() {
             <>
               <Link
                 to="/write"
-                className="px-4 py-1.5 text-sm font-sans font-medium rounded-lg text-white transition-colors"
+                className="px-4 py-1.5 text-sm font-sans font-medium rounded-lg transition-colors hover:shadow-[0_0_16px_-2px_var(--accent)]"
                 style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)' }}
                 onMouseOver={e => (e.currentTarget.style.backgroundColor = 'var(--accent-hover)')}
                 onMouseOut={e => (e.currentTarget.style.backgroundColor = 'var(--accent)')}
               >
                 Write
               </Link>
-              <Link to="/my-posts" className="text-sm text-faint hover:text-ink transition-colors font-sans hidden sm:block">
+              <Link to="/my-posts" className="text-sm text-faint hover:text-signature transition-colors font-sans hidden sm:block">
                 My Posts
               </Link>
               {profile?.username && (
@@ -62,7 +62,7 @@ export default function Header() {
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover border border-wire" />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-surface border border-wire flex items-center justify-center text-xs font-sans text-faint">
+                    <div className="w-7 h-7 rounded-full bg-paper border border-wire flex items-center justify-center text-xs font-sans text-faint">
                       {(profile.display_name || profile.username)?.[0]?.toUpperCase()}
                     </div>
                   )}
@@ -70,7 +70,7 @@ export default function Header() {
               )}
               <button
                 onClick={handleSignOut}
-                className="text-sm text-faint hover:text-ink transition-colors font-sans hidden sm:block"
+                className="text-sm text-faint hover:text-signature transition-colors font-sans hidden sm:block"
               >
                 Sign out
               </button>
@@ -78,7 +78,7 @@ export default function Header() {
           ) : (
             <Link
               to="/signin"
-              className="px-4 py-1.5 text-sm font-sans font-medium rounded-lg text-white transition-colors"
+              className="px-4 py-1.5 text-sm font-sans font-medium rounded-lg transition-colors hover:shadow-[0_0_16px_-2px_var(--accent)]"
               style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)' }}
               onMouseOver={e => (e.currentTarget.style.backgroundColor = 'var(--accent-hover)')}
               onMouseOut={e => (e.currentTarget.style.backgroundColor = 'var(--accent)')}
@@ -88,6 +88,7 @@ export default function Header() {
           )}
         </div>
       </div>
+      <div className="rule-ribbon" />
     </header>
   )
 }
