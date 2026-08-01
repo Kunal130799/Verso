@@ -1,6 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { api } from './lib/api'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Sidebar from './components/Sidebar'
@@ -58,6 +59,12 @@ function ConsentGuard() {
   return null
 }
 
+// /profile/:username → canonical /u/:username
+function ProfileRedirect() {
+  const { username } = useParams()
+  return <Navigate to={`/u/${username}`} replace />
+}
+
 // Catches old /@username/slug and /@username links (retired routing scheme) and
 // anything else unmatched, redirecting where possible instead of rendering blank.
 function NotFoundOrLegacyRedirect() {
@@ -79,16 +86,28 @@ function NotFoundOrLegacyRedirect() {
 
 function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [tags, setTags] = useState([])
   const location = useLocation()
 
   useEffect(() => setSidebarOpen(false), [location.pathname])
 
+  useEffect(() => {
+    api.get('/api/tags').then(data => setTags(data.tags)).catch(() => setTags([]))
+  }, [])
+
+  // The home page already has its own tag tabs + contributors rail, so a second
+  // "browse by tag" nav there is redundant. Elsewhere, hide it if there's simply
+  // nothing to browse yet instead of showing an empty box.
+  const showSidebar = tags.length > 0 && location.pathname !== '/'
+
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink">
       <ConsentGuard />
-      <Header onMenuClick={() => setSidebarOpen(o => !o)} />
+      <Header onMenuClick={() => setSidebarOpen(o => !o)} showMenuButton={showSidebar} />
       <div className="flex-1 flex items-start">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        {showSidebar && (
+          <Sidebar tags={tags} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        )}
         <main className="flex-1 min-w-0">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -111,6 +130,7 @@ function AppShell() {
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/posts/:slug" element={<PostPage />} />
             <Route path="/u/:username" element={<ProfilePage />} />
+            <Route path="/profile/:username" element={<ProfileRedirect />} />
             <Route path="*" element={<NotFoundOrLegacyRedirect />} />
           </Routes>
         </main>
