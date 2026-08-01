@@ -11,14 +11,6 @@ export default function Footer() {
           <Link to="/privacy"    className="hover:text-signature transition-colors">Privacy</Link>
           <Link to="/terms"      className="hover:text-signature transition-colors">Terms</Link>
           <Link to="/guidelines" className="hover:text-signature transition-colors">Guidelines</Link>
-          <a
-            href="https://verso-y40x.onrender.com/feed.xml"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-signature transition-colors"
-          >
-            RSS
-          </a>
         </nav>
       </div>
       <div className="max-w-wide mx-auto px-6 pb-6 flex items-center justify-center gap-3 text-xs text-faint font-sans border-t border-wire pt-4">

@@ -19,6 +19,8 @@ export default function Header({ onMenuClick, showMenuButton, sidebarOpen }) {
     navigate('/')
   }
 
+  const closeMenu = e => e.currentTarget.closest('details')?.removeAttribute('open')
+
   return (
     <header
       className="sticky top-0 z-50"
@@ -61,6 +63,50 @@ export default function Header({ onMenuClick, showMenuButton, sidebarOpen }) {
 
         <nav aria-label="Account" className="flex items-center gap-3 ml-auto">
           <ThemeToggle />
+
+          {/* Mobile-only menu: everything the sm:hidden links below hide away */}
+          <details className="relative sm:hidden">
+            <summary
+              aria-label="Menu"
+              className="list-none cursor-pointer p-1.5 rounded text-faint hover:text-signature transition-colors"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
+              </svg>
+            </summary>
+            <div
+              className="absolute right-0 mt-2 w-48 py-2 rounded-lg border border-wire shadow-lg text-sm font-sans z-50 flex flex-col"
+              style={{ backgroundColor: 'var(--surface)' }}
+            >
+              <form onSubmit={e => { handleSearch(e); closeMenu(e) }} role="search" className="px-3 pb-2 mb-1 border-b border-wire">
+                <input
+                  value={q}
+                  onChange={e => setQ(e.target.value)}
+                  placeholder="Search posts…"
+                  aria-label="Search posts"
+                  className="w-full px-3 py-1.5 text-sm bg-paper border border-wire rounded-md text-ink placeholder:text-faint focus:outline-none focus:border-accent transition-colors"
+                />
+              </form>
+              {user ? (
+                <>
+                  <Link to="/my-posts" onClick={closeMenu} className="px-3 py-2 text-faint hover:text-signature transition-colors">My Posts</Link>
+                  <Link to="/bookmarks" onClick={closeMenu} className="px-3 py-2 text-faint hover:text-signature transition-colors">Bookmarks</Link>
+                  <Link to="/settings" onClick={closeMenu} className="px-3 py-2 text-faint hover:text-signature transition-colors">Settings</Link>
+                  {profile?.username && (
+                    <Link to={`/u/${profile.username}`} onClick={closeMenu} className="px-3 py-2 text-faint hover:text-signature transition-colors">Profile</Link>
+                  )}
+                  <button
+                    onClick={e => { handleSignOut(); closeMenu(e) }}
+                    className="px-3 py-2 text-left text-faint hover:text-signature transition-colors"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <Link to="/signin" onClick={closeMenu} className="px-3 py-2 text-faint hover:text-signature transition-colors">Sign in</Link>
+              )}
+            </div>
+          </details>
           {user ? (
             <>
               <Link

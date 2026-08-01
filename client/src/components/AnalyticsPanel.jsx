@@ -30,7 +30,7 @@ export default function AnalyticsPanel({ posts }) {
     <div className="mb-10 pb-10 border-b border-wire">
       <h2 className="text-xs font-sans tracking-[0.2em] uppercase text-faint mb-4">Analytics</h2>
 
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         <StatTile label="Posts" value={posts.length} />
         <StatTile label="Total views" value={totalViews} />
         <StatTile label="Views, last 30 days" value={views30d} />
