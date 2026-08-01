@@ -6,10 +6,14 @@
   --bg: #e9f3fb;
   --surface: #ffffff;
   --text: #12293b;
-  --text-muted: #5a7a90;
+  /* #5a7a90 read 4.04:1 on --bg — under the 4.5:1 WCAG AA floor for normal
+     text. Darkened until it cleared 4.5:1, same hue. */
+  --text-muted: #547287;
   --border: #c9e0f0;
-  --accent: #1e88c7;
-  --accent-hover: #156b9e;
+  /* #1e88c7 read 3.46:1 on --bg (fails AA for text; links/CTAs use this
+     color). Darkened until it cleared 4.5:1 on --bg. */
+  --accent: #1973a8;
+  --accent-hover: #135e85;
   --accent-ink: #ffffff;
   --signature: #c4327c;
 }
@@ -58,11 +62,47 @@
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 body {
   background-color: var(--bg);
   color: var(--text);
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Skip link — hidden until keyboard-focused, first thing in tab order */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transform: translateY(-100%);
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0 8px 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Visible keyboard-focus ring for elements that otherwise suppress the
+   native outline with no replacement (plain focus:outline-none). */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Prose / reading styles — applied to post body and editor preview */

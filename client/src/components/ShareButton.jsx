@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function shareLinks(url, title) {
   const u = encodeURIComponent(url)
@@ -15,6 +15,13 @@ export default function ShareButton({ title, url, className = '' }) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '')
+
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = e => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [open])
 
   const handleClick = async () => {
     if (navigator.share) {
@@ -40,6 +47,8 @@ export default function ShareButton({ title, url, className = '' }) {
     <div className={`relative inline-block ${className}`}>
       <button
         onClick={handleClick}
+        aria-haspopup={navigator.share ? undefined : 'menu'}
+        aria-expanded={navigator.share ? undefined : open}
         className="inline-flex items-center gap-1.5 text-xs font-sans text-faint hover:text-ink transition-colors border border-wire rounded-full px-3 py-1.5"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -53,10 +62,13 @@ export default function ShareButton({ title, url, className = '' }) {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div
+            role="menu"
+            aria-label="Share options"
             className="absolute right-0 mt-2 w-44 rounded-lg border border-wire z-50 py-1.5 text-sm font-sans"
             style={{ backgroundColor: 'var(--surface)', boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}
           >
             <button
+              role="menuitem"
               onClick={handleCopy}
               className="w-full text-left px-3 py-1.5 text-faint hover:text-ink transition-colors"
             >
@@ -65,6 +77,7 @@ export default function ShareButton({ title, url, className = '' }) {
             {shareLinks(shareUrl, title).map(l => (
               <a
                 key={l.label}
+                role="menuitem"
                 href={l.href}
                 target="_blank"
                 rel="noopener noreferrer"

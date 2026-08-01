@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { api } from './lib/api'
 import Header from './components/Header'
@@ -89,8 +89,24 @@ function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [tags, setTags] = useState([])
   const location = useLocation()
+  const mainRef = useRef(null)
 
   useEffect(() => setSidebarOpen(false), [location.pathname])
+
+  // React Router doesn't reset focus on navigation — without this, a screen
+  // reader user who follows a link stays announced on whatever they just
+  // clicked, with no signal a new page loaded. Skipped on the actual initial
+  // page load (location.key === 'default', react-router's own marker for
+  // the first history entry): stealing focus to <main> there would jump
+  // past the skip link and header before the user ever gets a chance to tab
+  // to them. (A ref-based "have we rendered before" flag looks equivalent
+  // but isn't — React 18 StrictMode double-invokes this effect in dev, and
+  // the ref's mutation survives between those two invocations, so the
+  // second one sees the guard as already tripped and fires anyway.)
+  useEffect(() => {
+    if (location.key === 'default') return
+    mainRef.current?.focus()
+  }, [location.pathname, location.key])
 
   useEffect(() => {
     api.get('/api/tags').then(data => setTags(data.tags)).catch(() => setTags([]))
@@ -103,13 +119,14 @@ function AppShell() {
 
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink">
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <ConsentGuard />
-      <Header onMenuClick={() => setSidebarOpen(o => !o)} showMenuButton={showSidebar} />
+      <Header onMenuClick={() => setSidebarOpen(o => !o)} showMenuButton={showSidebar} sidebarOpen={sidebarOpen} />
       <div className="flex-1 flex items-start">
         {showSidebar && (
           <Sidebar tags={tags} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         )}
-        <main className="flex-1 min-w-0">
+        <main id="main-content" ref={mainRef} tabIndex={-1} className="flex-1 min-w-0 focus:outline-none">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/signin" element={<SignIn />} />

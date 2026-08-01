@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import ThemeToggle from './ThemeToggle'
 
-export default function Header({ onMenuClick, showMenuButton }) {
+export default function Header({ onMenuClick, showMenuButton, sidebarOpen }) {
   const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -30,6 +30,7 @@ export default function Header({ onMenuClick, showMenuButton }) {
           <button
             onClick={onMenuClick}
             aria-label="Toggle navigation"
+            aria-expanded={sidebarOpen}
             className="lg:hidden p-1.5 -ml-1.5 rounded text-faint hover:text-signature transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -48,16 +49,17 @@ export default function Header({ onMenuClick, showMenuButton }) {
         </Link>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-xs hidden sm:block">
+        <form onSubmit={handleSearch} role="search" className="flex-1 max-w-xs hidden sm:block">
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder="Search posts…"
+            aria-label="Search posts"
             className="w-full px-3 py-1.5 text-sm bg-paper border border-wire rounded-md text-ink placeholder:text-faint focus:outline-none focus:border-accent transition-colors"
           />
         </form>
 
-        <div className="flex items-center gap-3 ml-auto">
+        <nav aria-label="Account" className="flex items-center gap-3 ml-auto">
           <ThemeToggle />
           {user ? (
             <>
@@ -80,7 +82,7 @@ export default function Header({ onMenuClick, showMenuButton }) {
                 Settings
               </Link>
               {profile?.username && (
-                <Link to={`/u/${profile.username}`} className="hidden sm:block">
+                <Link to={`/u/${profile.username}`} aria-label="Your profile" className="hidden sm:block">
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover border border-wire" />
                   ) : (
@@ -108,7 +110,7 @@ export default function Header({ onMenuClick, showMenuButton }) {
               Sign in to write.
             </Link>
           )}
-        </div>
+        </nav>
       </div>
       <div className="rule-ribbon" />
     </header>

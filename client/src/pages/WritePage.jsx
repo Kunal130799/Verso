@@ -162,6 +162,7 @@ export default function WritePage() {
           <select
             value={status}
             onChange={e => setStatus(e.target.value)}
+            aria-label="Post visibility"
             className="text-sm font-sans bg-surface border border-wire rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-accent"
           >
             {STATUSES.map(s => (
@@ -191,7 +192,8 @@ export default function WritePage() {
         value={title}
         onChange={e => setTitle(e.target.value)}
         placeholder="Post title"
-        className="w-full font-serif text-3xl font-medium bg-transparent text-ink placeholder:text-faint focus:outline-none border-b border-wire pb-4 mb-6"
+        aria-label="Post title"
+        className="focus-ring w-full font-serif text-3xl font-medium bg-transparent text-ink placeholder:text-faint focus:outline-none border-b border-wire pb-4 mb-6"
       />
 
       {/* Editor */}

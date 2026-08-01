@@ -43,6 +43,15 @@ export default function Sidebar({ tags, open, onClose }) {
 
   const isActive = slug => slug === activeTagSlug || postTagSlugs.includes(slug)
 
+  // Escape closes the mobile drawer (it's a modal overlay there; on desktop
+  // it's docked inline, so `open` doesn't gate its visibility)
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = e => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [open, onClose])
+
   return (
     <>
       {open && (
@@ -53,6 +62,7 @@ export default function Sidebar({ tags, open, onClose }) {
         />
       )}
       <aside
+        aria-label="Browse by tag"
         className={`fixed lg:sticky top-16 left-0 z-40 lg:z-0 h-[calc(100vh-4rem)] w-64 flex-shrink-0 overflow-y-auto border-r border-wire px-5 py-6 transition-transform duration-200 lg:transition-none ${
           open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
@@ -67,10 +77,11 @@ export default function Sidebar({ tags, open, onClose }) {
               <div key={letter}>
                 <button
                   onClick={() => toggleLetter(letter)}
+                  aria-expanded={isOpen}
                   className="w-full flex items-center justify-between py-1.5 text-sm font-sans font-semibold text-ink"
                 >
                   {letter}
-                  <span className="text-faint text-xs">{isOpen ? '−' : '+'}</span>
+                  <span aria-hidden="true" className="text-faint text-xs">{isOpen ? '−' : '+'}</span>
                 </button>
                 {isOpen && (
                   <div className="pl-3 border-l border-wire flex flex-col gap-1 mb-2">
