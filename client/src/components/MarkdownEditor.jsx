@@ -35,6 +35,51 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
     })
   }
 
+  // Wraps the current selection in markdown syntax (bold/italic/etc). With no
+  // selection, inserts a placeholder and selects it so typing replaces it.
+  const wrapSelection = (before, after = before, placeholder = 'text') => {
+    const el = activeTextareaRef.current
+    if (!el) return
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    const selected = value.slice(start, end) || placeholder
+    onChange(value.slice(0, start) + before + selected + after + value.slice(end))
+    requestAnimationFrame(() => {
+      el.focus()
+      el.selectionStart = start + before.length
+      el.selectionEnd = start + before.length + selected.length
+    })
+  }
+
+  // Prefixes the current line (e.g. "## " for a heading)
+  const insertLinePrefix = prefix => {
+    const el = activeTextareaRef.current
+    if (!el) return
+    const start = el.selectionStart
+    const lineStart = value.lastIndexOf('\n', start - 1) + 1
+    onChange(value.slice(0, lineStart) + prefix + value.slice(lineStart))
+    requestAnimationFrame(() => {
+      el.focus()
+      el.selectionStart = el.selectionEnd = start + prefix.length
+    })
+  }
+
+  const insertLink = () => {
+    const el = activeTextareaRef.current
+    if (!el) return
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    const text = value.slice(start, end) || 'link text'
+    const markdown = `[${text}](url)`
+    onChange(value.slice(0, start) + markdown + value.slice(end))
+    requestAnimationFrame(() => {
+      el.focus()
+      const urlStart = start + text.length + 3
+      el.selectionStart = urlStart
+      el.selectionEnd = urlStart + 3
+    })
+  }
+
   const handleImagePick = async e => {
     const file = e.target.files[0]
     e.target.value = ''
@@ -58,6 +103,17 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
 
   const toolbar = (
     <div className="flex items-center gap-3 px-3 py-2 border-b border-wire bg-surface flex-wrap">
+      <div className="flex items-center gap-1">
+        <button type="button" onClick={() => wrapSelection('**')} title="Bold" className="w-6 h-6 flex items-center justify-center rounded text-xs font-bold text-faint hover:text-ink hover:bg-paper transition-colors">B</button>
+        <button type="button" onClick={() => wrapSelection('_')} title="Italic" className="w-6 h-6 flex items-center justify-center rounded text-xs italic text-faint hover:text-ink hover:bg-paper transition-colors">i</button>
+        <button type="button" onClick={() => insertLinePrefix('## ')} title="Heading" className="w-6 h-6 flex items-center justify-center rounded text-xs font-semibold text-faint hover:text-ink hover:bg-paper transition-colors">H</button>
+        <button type="button" onClick={insertLink} title="Link" className="w-6 h-6 flex items-center justify-center rounded text-faint hover:text-ink hover:bg-paper transition-colors">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </button>
+      </div>
+
+      <span className="w-px h-4 bg-wire" />
+
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
