@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import PostCard from '../components/PostCard'
+import ShareButton from '../components/ShareButton'
 import { PostCardSkeleton } from '../components/LoadingSkeleton'
+
+function formatJoinDate(iso) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+}
 
 export default function ProfilePage() {
   const { username } = useParams()
@@ -60,14 +66,26 @@ export default function ProfilePage() {
               {(profile.display_name || profile.username)?.[0]?.toUpperCase()}
             </div>
           )}
-          <div>
-            <h1 className="font-serif text-2xl font-medium text-ink mb-0.5">
-              {profile.display_name || profile.username}
-            </h1>
-            <p className="text-sm font-sans text-faint mb-2">@{profile.username}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div>
+                <h1 className="font-serif text-2xl font-medium text-ink mb-0.5">
+                  {profile.display_name || profile.username}
+                </h1>
+                <p className="text-sm font-sans text-faint mb-2">@{profile.username}</p>
+              </div>
+              <ShareButton
+                title={profile.display_name || profile.username}
+                url={`${window.location.origin}/u/${profile.username}`}
+              />
+            </div>
             {profile.bio && (
-              <p className="text-sm font-sans text-faint max-w-prose">{profile.bio}</p>
+              <p className="text-sm font-sans text-faint max-w-prose mb-2">{profile.bio}</p>
             )}
+            <p className="text-xs font-sans text-faint">
+              {posts.length} public {posts.length === 1 ? 'post' : 'posts'}
+              {profile.created_at && ` · Joined ${formatJoinDate(profile.created_at)}`}
+            </p>
           </div>
         </div>
       </header>

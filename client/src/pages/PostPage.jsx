@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
 import { PostPageSkeleton } from '../components/LoadingSkeleton'
 import ListenBar from '../components/ListenBar'
+import ShareButton from '../components/ShareButton'
 import { markdownRemarkPlugins, markdownRehypePlugins, markdownComponents } from '../lib/markdown'
 
 function formatDate(iso) {
@@ -104,11 +105,14 @@ export default function PostPage() {
                 <span>{post.view_count.toLocaleString()} views</span>
               </>
             )}
-            {isAuthor && (
-              <Link to={`/write/${post.id}`} className="ml-auto text-xs text-faint hover:text-accent transition-colors">
-                Edit
-              </Link>
-            )}
+            <div className="ml-auto flex items-center gap-3">
+              {isAuthor && (
+                <Link to={`/write/${post.id}`} className="text-xs text-faint hover:text-accent transition-colors">
+                  Edit
+                </Link>
+              )}
+              <ShareButton title={post.title} url={`${window.location.origin}/posts/${post.slug}`} />
+            </div>
           </div>
           <ListenBar title={post.title} content={post.content} />
         </div>
