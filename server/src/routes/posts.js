@@ -2,6 +2,7 @@ import { Router } from 'express'
 import multer from 'multer'
 import { supabase } from '../lib/supabase.js'
 import { requireAuth, optionalAuth } from '../middleware/auth.js'
+import { writeLimiter, viewLimiter } from '../middleware/rateLimit.js'
 
 const router = Router()
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } })
@@ -99,7 +100,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
 })
 
 // POST /api/posts
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, writeLimiter, async (req, res) => {
   const { title, content = '', status = 'draft', excerpt = '', tags = [] } = req.body
   if (!title?.trim()) return res.status(400).json({ error: 'Title is required' })
 
@@ -170,7 +171,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
 })
 
 // POST /api/posts/:id/view
-router.post('/:id/view', async (req, res) => {
+router.post('/:id/view', viewLimiter, async (req, res) => {
   const { data: post } = await supabase
     .from('posts').select('id, status, view_count').eq('id', req.params.id).maybeSingle()
 
@@ -181,7 +182,7 @@ router.post('/:id/view', async (req, res) => {
 })
 
 // POST /api/posts/:id/cover
-router.post('/:id/cover', requireAuth, upload.single('cover'), async (req, res) => {
+router.post('/:id/cover', requireAuth, writeLimiter, upload.single('cover'), async (req, res) => {
   const { data: post } = await supabase
     .from('posts').select('id, author_id').eq('id', req.params.id).maybeSingle()
 
@@ -248,7 +249,7 @@ async function relatedPosts(post) {
 }
 
 // POST /api/posts/:id/images — images inserted into the post body, separate from the cover
-router.post('/:id/images', requireAuth, upload.single('image'), async (req, res) => {
+router.post('/:id/images', requireAuth, writeLimiter, upload.single('image'), async (req, res) => {
   const { data: post } = await supabase
     .from('posts').select('id, author_id').eq('id', req.params.id).maybeSingle()
 

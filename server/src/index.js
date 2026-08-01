@@ -8,9 +8,15 @@ import profileRouter from './routes/profile.js'
 import searchRouter  from './routes/search.js'
 import tagsRouter    from './routes/tags.js'
 import feedRouter    from './routes/feed.js'
+import { apiLimiter } from './middleware/rateLimit.js'
 
 const app  = express()
 const PORT = process.env.PORT || 3001
+
+// Render sits one reverse proxy in front of the app — trust exactly that hop
+// so req.ip (and therefore rate limiting) reflects the real client, not
+// Render's proxy IP for every request.
+app.set('trust proxy', 1)
 
 const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',').map(s => s.trim())
@@ -23,6 +29,7 @@ app.use(cors({
 }))
 
 app.use(express.json({ limit: '1mb' }))
+app.use(apiLimiter)
 
 app.use('/api/posts',   postsRouter)
 app.use('/api',         usersRouter)
