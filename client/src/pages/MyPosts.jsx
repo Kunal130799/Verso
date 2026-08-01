@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
 import StatusChip from '../components/StatusChip'
+import AnalyticsPanel from '../components/AnalyticsPanel'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -67,6 +68,8 @@ export default function MyPosts() {
           </Link>
         </div>
       ) : (
+        <>
+        <AnalyticsPanel posts={posts} />
         <div className="divide-y divide-wire">
           {posts.map(post => (
             <div key={post.id} className="py-5 flex items-start justify-between gap-4">
@@ -101,6 +104,7 @@ export default function MyPosts() {
             </div>
           ))}
         </div>
+        </>
       )}
     </div>
   )

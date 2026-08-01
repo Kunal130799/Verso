@@ -125,3 +125,22 @@ alter table public.bookmarks enable row level security;
 
 create policy "users manage own bookmarks" on public.bookmarks
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- 10. POST_VIEWS — one row per view, alongside posts.view_count (that
+-- running counter stays as the cheap total shown everywhere; this log only
+-- backs the "views over time" chart in My Posts, so it doesn't need to be
+-- fast to read on every post-page load).
+create table if not exists public.post_views (
+  id bigint generated always as identity primary key,
+  post_id uuid not null references public.posts(id) on delete cascade,
+  viewed_at timestamptz not null default now()
+);
+
+create index if not exists post_views_post_idx on public.post_views (post_id, viewed_at desc);
+
+alter table public.post_views enable row level security;
+
+create policy "authors read own post views" on public.post_views
+  for select using (
+    exists (select 1 from public.posts where posts.id = post_views.post_id and posts.author_id = auth.uid())
+  );

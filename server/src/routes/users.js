@@ -61,6 +61,44 @@ router.get('/my-posts', requireAuth, async (req, res) => {
   res.json({ posts: data })
 })
 
+// GET /api/my-posts/analytics — daily view counts across all your posts,
+// last 30 days (including zero-view days, so the chart has no gaps)
+router.get('/my-posts/analytics', requireAuth, async (req, res) => {
+  const { data: myPosts } = await supabase
+    .from('posts').select('id').eq('author_id', req.user.id)
+
+  const postIds = (myPosts || []).map(p => p.id)
+  const DAYS = 30
+  const since = new Date(Date.now() - DAYS * 86400000).toISOString()
+
+  const buckets = {}
+  for (let i = 0; i < DAYS; i++) {
+    const day = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)
+    buckets[day] = 0
+  }
+
+  if (postIds.length > 0) {
+    const { data: views, error } = await supabase
+      .from('post_views')
+      .select('viewed_at')
+      .in('post_id', postIds)
+      .gte('viewed_at', since)
+
+    if (error) return res.status(500).json({ error: error.message })
+
+    for (const v of views || []) {
+      const day = v.viewed_at.slice(0, 10)
+      if (day in buckets) buckets[day]++
+    }
+  }
+
+  const series = Object.entries(buckets)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, views]) => ({ date, views }))
+
+  res.json({ series })
+})
+
 // DELETE /api/me
 router.delete('/me', requireAuth, async (req, res) => {
   const { error: profileErr } = await supabase

@@ -187,6 +187,7 @@ router.post('/:id/view', viewLimiter, async (req, res) => {
   if (!post || post.status !== 'public') return res.status(404).json({ error: 'Not found' })
 
   await supabase.from('posts').update({ view_count: post.view_count + 1 }).eq('id', req.params.id)
+  await supabase.from('post_views').insert({ post_id: post.id })
   res.json({ success: true })
 })
 
