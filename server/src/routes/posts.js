@@ -65,6 +65,7 @@ router.get('/by-slug/:slug', optionalAuth, async (req, res) => {
     if (!req.user || req.user.id !== post.author_id) return res.status(404).json({ error: 'Not found' })
   }
 
+  post.related = await relatedPosts(post)
   res.json(post)
 })
 
@@ -206,6 +207,45 @@ router.post('/:id/cover', requireAuth, upload.single('cover'), async (req, res) 
 
   res.json({ cover_image_url: publicUrl })
 })
+
+// Up to 3 public posts sharing a tag with `post`, backfilled with the latest public posts.
+async function relatedPosts(post) {
+  const fields = 'id, title, slug, excerpt, cover_image_url, reading_time_minutes, published_at'
+  const tagIds = (post.post_tags || []).map(pt => pt.tags?.id).filter(Boolean)
+  const picked = new Map()
+
+  if (tagIds.length > 0) {
+    const { data } = await supabase
+      .from('posts')
+      .select(`${fields}, post_tags!inner(tag_id)`)
+      .eq('status', 'public')
+      .neq('id', post.id)
+      .in('post_tags.tag_id', tagIds)
+      .order('published_at', { ascending: false })
+      .limit(10)
+    for (const p of data || []) {
+      if (picked.size >= 3) break
+      delete p.post_tags
+      picked.set(p.id, p)
+    }
+  }
+
+  if (picked.size < 3) {
+    const { data } = await supabase
+      .from('posts')
+      .select(fields)
+      .eq('status', 'public')
+      .neq('id', post.id)
+      .order('published_at', { ascending: false })
+      .limit(3 + picked.size)
+    for (const p of data || []) {
+      if (picked.size >= 3) break
+      if (!picked.has(p.id)) picked.set(p.id, p)
+    }
+  }
+
+  return [...picked.values()]
+}
 
 async function upsertTags(postId, names) {
   for (const name of names) {

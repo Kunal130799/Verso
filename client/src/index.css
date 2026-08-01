@@ -3,25 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --bg: #FAF9F7;
-  --surface: #FFFFFF;
-  --text: #1A1A1A;
-  --text-muted: #6B6B6B;
-  --border: #E6E3DD;
-  --accent: #1F4E8C;
-  --accent-hover: #173C6B;
-  --signature: #8C3B3B;
-}
-
-[data-theme="dark"] {
-  --bg: #15140F;
-  --surface: #1E1C17;
-  --text: #ECEAE3;
-  --text-muted: #9A958A;
-  --border: #2E2B25;
-  --accent: #7FB0EE;
-  --accent-hover: #A6C8F4;
-  --signature: #C97A6D;
+  --bg: #0a1c2b;
+  --surface: #0b2837;
+  --text: #f3f6f8;
+  --text-muted: #8ea3ae;
+  --border: #1e4c63;
+  --accent: #5fd4e8;
+  --accent-hover: #8de4f2;
+  --signature: #ec5fb0;
 }
 
 /* Title-page double rule — used under the masthead/header */
@@ -109,5 +98,5 @@ body {
 .prose th, .prose td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
 .prose th { background: var(--surface); font-weight: 600; }
 
-/* Dark mode logo: invert the ink strokes */
-[data-theme="dark"] .logo-mark { filter: invert(1) hue-rotate(180deg) brightness(1.5); }
+/* Logo drawn for a light background — invert to read on Verso's dark theme */
+.logo-mark { filter: invert(1) hue-rotate(180deg) brightness(1.5); }

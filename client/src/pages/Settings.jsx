@@ -117,7 +117,7 @@ export default function Settings() {
             type="submit"
             disabled={saving}
             className="px-5 py-2 text-sm font-sans font-medium text-white rounded-lg disabled:opacity-50 transition-colors"
-            style={{ backgroundColor: 'var(--accent)' }}
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)' }}
             onMouseOver={e => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = 'var(--accent-hover)')}
             onMouseOut={e => (e.currentTarget.style.backgroundColor = 'var(--accent)')}
           >

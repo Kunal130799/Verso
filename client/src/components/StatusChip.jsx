@@ -1,7 +1,7 @@
 const styles = {
   draft:   { bg: 'var(--surface)', color: 'var(--text-muted)', border: 'var(--border)' },
   private: { bg: 'var(--surface)', color: 'var(--text-muted)', border: 'var(--border)' },
-  public:  { bg: 'var(--accent)',  color: '#ffffff',            border: 'var(--accent)'  },
+  public:  { bg: 'var(--accent)',  color: 'var(--bg)',           border: 'var(--accent)'  },
 }
 
 const icons = {
