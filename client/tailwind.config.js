@@ -14,7 +14,7 @@ export default {
         signature: 'var(--signature)',
       },
       fontFamily: {
-        serif: ['Newsreader', 'Georgia', 'serif'],
+        serif: ['Sora', 'system-ui', 'sans-serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       maxWidth: {

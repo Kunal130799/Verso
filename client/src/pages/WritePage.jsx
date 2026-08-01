@@ -123,6 +123,19 @@ export default function WritePage() {
     }
   }
 
+  const handleContentImageUpload = async file => {
+    if (!postIdRef.current) throw new Error('Save the post first before adding images.')
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (!allowed.includes(file.type)) throw new Error('Use a JPG, PNG, WebP, or GIF image.')
+    if (file.size > 5 * 1024 * 1024) throw new Error('Image must be under 5 MB.')
+
+    const formData = new FormData()
+    formData.append('image', file)
+    const token = await getToken()
+    const data = await api.upload(`/api/posts/${postIdRef.current}/images`, formData, token)
+    return data.url
+  }
+
   const addTag = () => {
     const t = tagInput.trim()
     if (!t || tags.includes(t) || tags.length >= 5) return
@@ -182,7 +195,12 @@ export default function WritePage() {
       />
 
       {/* Editor */}
-      <MarkdownEditor value={content} onChange={setContent} />
+      <MarkdownEditor
+        value={content}
+        onChange={setContent}
+        onUploadImage={handleContentImageUpload}
+        imagesEnabled={!!postIdRef.current}
+      />
 
       {/* Excerpt */}
       <div className="mt-6">

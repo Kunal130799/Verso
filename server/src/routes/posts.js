@@ -247,6 +247,32 @@ async function relatedPosts(post) {
   return [...picked.values()]
 }
 
+// POST /api/posts/:id/images — images inserted into the post body, separate from the cover
+router.post('/:id/images', requireAuth, upload.single('image'), async (req, res) => {
+  const { data: post } = await supabase
+    .from('posts').select('id, author_id').eq('id', req.params.id).maybeSingle()
+
+  if (!post || post.author_id !== req.user.id) return res.status(404).json({ error: 'Not found' })
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+
+  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+  if (!allowed.includes(req.file.mimetype)) {
+    return res.status(400).json({ error: 'Use JPG, PNG, WebP, or GIF' })
+  }
+
+  const ext = req.file.mimetype.split('/')[1].replace('jpeg', 'jpg')
+  const path = `${req.user.id}/content/${req.params.id}-${Date.now()}.${ext}`
+
+  const { error: upErr } = await supabase.storage
+    .from('covers').upload(path, req.file.buffer, { contentType: req.file.mimetype, upsert: true })
+
+  if (upErr) return res.status(500).json({ error: upErr.message })
+
+  const { data: { publicUrl } } = supabase.storage.from('covers').getPublicUrl(path)
+
+  res.json({ url: publicUrl })
+})
+
 async function upsertTags(postId, names) {
   for (const name of names) {
     const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')

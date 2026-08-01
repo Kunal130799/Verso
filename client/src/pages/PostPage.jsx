@@ -161,12 +161,12 @@ export default function PostPage() {
           <div>
             <Link
               to={`/u/${author?.username}`}
-              className="text-base font-sans font-semibold text-ink hover:text-accent transition-colors"
+              className="block text-base font-sans font-semibold text-ink hover:text-accent transition-colors"
             >
               {author?.display_name || author?.username}
             </Link>
             {author?.bio && <p className="text-sm font-sans text-faint mt-1">{author.bio}</p>}
-            <Link to={`/u/${author?.username}`} className="text-xs font-sans text-accent mt-2 inline-block">
+            <Link to={`/u/${author?.username}`} className="block text-xs font-sans text-accent mt-2">
               See all posts →
             </Link>
           </div>

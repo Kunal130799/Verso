@@ -53,7 +53,7 @@ body {
 
 /* Prose / reading styles — applied to post body and editor preview */
 .prose {
-  font-family: 'Newsreader', Georgia, serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 18px;
   line-height: 1.75;
   color: var(--text);

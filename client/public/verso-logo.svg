@@ -4,6 +4,6 @@
     <path d="M32 6 C 22 0, 8 2, 2 6 L 2 56 C 8 52, 22 50, 32 56 Z" fill="#1F4E8C" fill-opacity="0.9" stroke="#1F4E8C" />
     <path d="M32 6 C 42 0, 56 2, 62 6 L 62 56 C 56 52, 42 50, 32 56 Z" fill="none" stroke="#1A1A1A" />
   </g>
-  <text x="118" y="78" font-family="Newsreader, Georgia, 'Times New Roman', serif"
-        font-size="58" font-weight="500" letter-spacing="1" fill="#1A1A1A">Verso</text>
+  <text x="118" y="78" font-family="Sora, system-ui, sans-serif"
+        font-size="56" font-weight="600" letter-spacing="0" fill="#1A1A1A">Verso</text>
 </svg>
