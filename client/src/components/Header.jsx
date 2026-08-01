@@ -27,7 +27,8 @@ export default function Header() {
       <div className="max-w-wide mx-auto px-6 h-16 flex items-center gap-4">
         {/* Logo */}
         <Link to="/" className="flex-shrink-0 flex items-center gap-2">
-          <img src="/verso-logo.svg" alt="Verso" className="h-7 logo-mark" />
+          <img src="/verso-logo.png" alt="Verso" className="h-7 w-auto logo-light" />
+          <img src="/verso-logo-dark.png" alt="Verso" className="h-7 w-auto logo-dark" />
           <span className="hidden md:block text-xs font-sans tracking-[0.2em] uppercase text-faint">
             A quieter place
           </span>

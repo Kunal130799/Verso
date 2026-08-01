@@ -112,5 +112,7 @@ body {
 .prose th, .prose td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
 .prose th { background: var(--surface); font-weight: 600; }
 
-/* Logo drawn for a light background — invert to read on the dark theme */
-[data-theme="dark"] .logo-mark { filter: invert(1) hue-rotate(180deg) brightness(1.5); }
+/* Logo: separate light/dark-mode assets, toggled by theme instead of filters */
+.logo-dark { display: none; }
+[data-theme="dark"] .logo-light { display: none; }
+[data-theme="dark"] .logo-dark { display: inline-block; }

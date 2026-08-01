@@ -18,7 +18,8 @@ export default function SignIn() {
 
   return (
     <div className="max-w-sm mx-auto px-6 py-24 text-center">
-      <img src="/verso-logo.svg" alt="Verso" className="h-8 mx-auto mb-8 logo-mark" />
+      <img src="/verso-logo.png" alt="Verso" className="h-8 w-auto mx-auto mb-8 logo-light" />
+      <img src="/verso-logo-dark.png" alt="Verso" className="h-8 w-auto mx-auto mb-8 logo-dark" />
       <p className="font-serif text-xl text-ink mb-2">Sign in to write.</p>
       <p className="text-faint text-sm font-sans mb-10">
         One click. No password. Your writing stays yours.

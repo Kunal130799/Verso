@@ -12,6 +12,15 @@ export default function Footer() {
           <Link to="/guidelines" className="hover:text-signature transition-colors">Guidelines</Link>
         </nav>
       </div>
+      <div className="max-w-wide mx-auto px-6 pb-6 flex items-center justify-center gap-3 text-xs text-faint font-sans border-t border-wire pt-4">
+        <span>
+          Built by <a href="mailto:kunalparmar130799@gmail.com" className="hover:text-signature transition-colors">Kunal Parmar</a>
+        </span>
+        <span>·</span>
+        <a href="https://github.com/Kunal130799" target="_blank" rel="noopener noreferrer" className="hover:text-signature transition-colors">
+          GitHub
+        </a>
+      </div>
     </footer>
   )
 }
