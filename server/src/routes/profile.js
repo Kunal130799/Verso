@@ -3,6 +3,32 @@ import { supabase } from '../lib/supabase.js'
 
 const router = Router()
 
+// GET /api/profile/top/contributors — ranked by public post count
+router.get('/top/contributors', async (req, res) => {
+  const { data: rows, error } = await supabase
+    .from('posts').select('author_id').eq('status', 'public')
+
+  if (error) return res.status(500).json({ error: error.message })
+
+  const counts = {}
+  for (const { author_id } of rows) counts[author_id] = (counts[author_id] || 0) + 1
+
+  const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8)
+  if (ranked.length === 0) return res.json({ contributors: [] })
+
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, username, display_name, avatar_url')
+    .in('id', ranked.map(([id]) => id))
+
+  const byId = Object.fromEntries((profiles || []).map(p => [p.id, p]))
+  const contributors = ranked
+    .filter(([id]) => byId[id])
+    .map(([id, post_count]) => ({ ...byId[id], post_count }))
+
+  res.json({ contributors })
+})
+
 // GET /api/profile/:username
 router.get('/:username', async (req, res) => {
   const { data: profile, error } = await supabase
