@@ -3,6 +3,18 @@
 @tailwind utilities;
 
 :root {
+  --bg: #e9f3fb;
+  --surface: #ffffff;
+  --text: #12293b;
+  --text-muted: #5a7a90;
+  --border: #c9e0f0;
+  --accent: #1e88c7;
+  --accent-hover: #156b9e;
+  --accent-ink: #ffffff;
+  --signature: #c4327c;
+}
+
+[data-theme="dark"] {
   --bg: #0a1c2b;
   --surface: #0b2837;
   --text: #f3f6f8;
@@ -10,6 +22,7 @@
   --border: #1e4c63;
   --accent: #5fd4e8;
   --accent-hover: #8de4f2;
+  --accent-ink: #0a1c2b;
   --signature: #ec5fb0;
 }
 
@@ -99,5 +112,5 @@ body {
 .prose th, .prose td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
 .prose th { background: var(--surface); font-weight: 600; }
 
-/* Logo drawn for a light background — invert to read on Verso's dark theme */
-.logo-mark { filter: invert(1) hue-rotate(180deg) brightness(1.5); }
+/* Logo drawn for a light background — invert to read on the dark theme */
+[data-theme="dark"] .logo-mark { filter: invert(1) hue-rotate(180deg) brightness(1.5); }

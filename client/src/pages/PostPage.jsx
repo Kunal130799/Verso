@@ -188,7 +188,7 @@ export default function PostPage() {
                 {rp.cover_image_url ? (
                   <img src={rp.cover_image_url} alt="" className="w-full h-28 object-cover" />
                 ) : (
-                  <div className="w-full h-28" style={{ background: 'linear-gradient(135deg,#12384c,#0a2130)' }} />
+                  <div className="w-full h-28" style={{ background: 'linear-gradient(135deg, var(--surface), var(--bg))' }} />
                 )}
                 <div className="p-4">
                   <div className="text-xs font-sans text-faint mb-2">
@@ -206,7 +206,7 @@ export default function PostPage() {
       <div className="max-w-wide mx-auto px-6 pb-16">
         <div
           className="rounded-2xl border border-wire p-10 sm:p-12"
-          style={{ background: 'linear-gradient(120deg,#12222e,#0a1520)' }}
+          style={{ background: 'linear-gradient(120deg, var(--surface), var(--bg))' }}
         >
           <h3 className="font-serif text-2xl sm:text-3xl font-medium text-ink mb-2">
             {user ? 'Have something to say?' : 'Join Verso'}
@@ -217,7 +217,7 @@ export default function PostPage() {
           <Link
             to={user ? '/write' : '/signin'}
             className="inline-block px-5 py-2.5 text-sm font-sans font-medium rounded-lg transition-colors"
-            style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)' }}
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-ink)' }}
           >
             {user ? 'Start writing' : 'Sign in to write'}
           </Link>

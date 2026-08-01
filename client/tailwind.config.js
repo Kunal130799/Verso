@@ -11,6 +11,7 @@ export default {
         wire: 'var(--border)',
         accent: 'var(--accent)',
         'accent-hi': 'var(--accent-hover)',
+        'accent-ink': 'var(--accent-ink)',
         signature: 'var(--signature)',
       },
       fontFamily: {

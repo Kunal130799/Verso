@@ -1,6 +1,7 @@
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import ThemeToggle from './ThemeToggle'
 
 export default function Header() {
   const { user, profile, signOut } = useAuth()
@@ -43,12 +44,13 @@ export default function Header() {
         </form>
 
         <div className="flex items-center gap-3 ml-auto">
+          <ThemeToggle />
           {user ? (
             <>
               <Link
                 to="/write"
                 className="px-4 py-1.5 text-sm font-sans font-medium rounded-lg transition-colors hover:shadow-[0_0_16px_-2px_var(--accent)]"
-                style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)' }}
+                style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-ink)' }}
                 onMouseOver={e => (e.currentTarget.style.backgroundColor = 'var(--accent-hover)')}
                 onMouseOut={e => (e.currentTarget.style.backgroundColor = 'var(--accent)')}
               >
@@ -79,7 +81,7 @@ export default function Header() {
             <Link
               to="/signin"
               className="px-4 py-1.5 text-sm font-sans font-medium rounded-lg transition-colors hover:shadow-[0_0_16px_-2px_var(--accent)]"
-              style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)' }}
+              style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-ink)' }}
               onMouseOver={e => (e.currentTarget.style.backgroundColor = 'var(--accent-hover)')}
               onMouseOut={e => (e.currentTarget.style.backgroundColor = 'var(--accent)')}
             >

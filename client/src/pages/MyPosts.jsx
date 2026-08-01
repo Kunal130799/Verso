@@ -49,7 +49,7 @@ export default function MyPosts() {
         <Link
           to="/write"
           className="px-4 py-2 text-sm font-sans font-medium text-white rounded-lg transition-colors"
-          style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)' }}
+          style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-ink)' }}
           onMouseOver={e => (e.currentTarget.style.backgroundColor = 'var(--accent-hover)')}
           onMouseOut={e => (e.currentTarget.style.backgroundColor = 'var(--accent)')}
         >

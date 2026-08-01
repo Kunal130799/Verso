@@ -58,7 +58,7 @@ export default function ConsentGate() {
         onClick={handleContinue}
         disabled={!checked || loading}
         className="w-full py-3 rounded-lg text-sm font-sans font-medium text-white transition-colors disabled:opacity-40"
-        style={{ backgroundColor: 'var(--accent)', color: 'var(--bg)' }}
+        style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-ink)' }}
         onMouseOver={e => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = 'var(--accent-hover)')}
         onMouseOut={e => (e.currentTarget.style.backgroundColor = 'var(--accent)')}
       >
