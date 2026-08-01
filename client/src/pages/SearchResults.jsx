@@ -32,7 +32,7 @@ export default function SearchResults() {
   }
 
   return (
-    <div className="max-w-feed mx-auto px-6 py-12">
+    <div className="max-w-wide mx-auto px-6 py-12">
       <h1 className="font-serif text-2xl font-medium text-ink mb-6">Search</h1>
 
       <form onSubmit={handleSearch} className="flex gap-3 mb-10">
@@ -54,8 +54,6 @@ export default function SearchResults() {
         </button>
       </form>
 
-      {loading && [...Array(3)].map((_, i) => <PostCardSkeleton key={i} />)}
-
       {!loading && searched && q && (
         <p className="text-sm text-faint font-sans mb-6">
           {posts.length === 0
@@ -64,7 +62,10 @@ export default function SearchResults() {
         </p>
       )}
 
-      {!loading && posts.map(post => <PostCard key={post.id} post={post} />)}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        {loading && [...Array(3)].map((_, i) => <PostCardSkeleton key={i} />)}
+        {!loading && posts.map(post => <PostCard key={post.id} post={post} />)}
+      </div>
     </div>
   )
 }

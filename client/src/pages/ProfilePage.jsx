@@ -26,13 +26,15 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="max-w-feed mx-auto px-6 py-12">
+      <div className="max-w-wide mx-auto px-6 py-12">
         <div className="animate-pulse mb-10">
           <div className="w-16 h-16 rounded-full bg-surface mb-4" />
           <div className="h-6 bg-surface rounded w-40 mb-2" />
           <div className="h-4 bg-surface rounded w-64" />
         </div>
-        {[...Array(3)].map((_, i) => <PostCardSkeleton key={i} />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => <PostCardSkeleton key={i} />)}
+        </div>
       </div>
     )
   }
@@ -47,7 +49,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-feed mx-auto px-6 py-12">
+    <div className="max-w-wide mx-auto px-6 py-12">
       {/* Profile header */}
       <header className="mb-10 pb-8 border-b border-wire">
         <div className="flex items-start gap-5">
@@ -74,12 +76,14 @@ export default function ProfilePage() {
       {posts.length === 0 ? (
         <p className="font-serif text-xl text-faint py-8">No public posts yet.</p>
       ) : (
-        posts.map(post => (
-          <PostCard
-            key={post.id}
-            post={{ ...post, author: profile, profiles: profile }}
-          />
-        ))
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {posts.map(post => (
+            <PostCard
+              key={post.id}
+              post={{ ...post, author: profile, profiles: profile }}
+            />
+          ))}
+        </div>
       )}
     </div>
   )

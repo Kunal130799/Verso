@@ -1,17 +1,16 @@
 export function PostCardSkeleton() {
   return (
-    <div className="py-8 border-b border-wire animate-pulse">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-5 h-5 rounded-full bg-surface" />
-        <div className="h-3 bg-surface rounded w-24" />
-      </div>
-      <div className="h-6 bg-surface rounded w-3/4 mb-2" />
-      <div className="h-4 bg-surface rounded w-full mb-1" />
-      <div className="h-4 bg-surface rounded w-2/3 mb-4" />
-      <div className="flex gap-3">
-        <div className="h-3 bg-surface rounded w-16" />
-        <div className="h-3 bg-surface rounded w-16" />
-        <div className="h-3 bg-surface rounded w-16" />
+    <div className="border border-wire rounded-xl overflow-hidden animate-pulse">
+      <div className="w-full h-40 bg-surface" />
+      <div className="p-5">
+        <div className="h-4 bg-surface rounded w-16 mb-3" />
+        <div className="h-5 bg-surface rounded w-3/4 mb-2" />
+        <div className="h-4 bg-surface rounded w-full mb-1" />
+        <div className="h-4 bg-surface rounded w-2/3 mb-4" />
+        <div className="flex items-center gap-2 pt-3 border-t border-wire">
+          <div className="w-5 h-5 rounded-full bg-surface" />
+          <div className="h-3 bg-surface rounded w-20" />
+        </div>
       </div>
     </div>
   )

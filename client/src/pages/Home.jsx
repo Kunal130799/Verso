@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import PostCard from '../components/PostCard'
+import TopContributors from '../components/TopContributors'
 import { PostCardSkeleton } from '../components/LoadingSkeleton'
 
 const PAGE_SIZE = 20
@@ -34,19 +35,42 @@ export default function Home() {
 
   return (
     <div className="max-w-wide mx-auto px-6 py-12">
-      <div className="mb-10">
+      <div className="mb-8">
         <h1 className="font-serif text-3xl font-medium text-ink mb-1">Latest</h1>
         <p className="text-faint text-sm font-sans">Public posts from all writers on Verso.</p>
       </div>
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,680px)_1fr] lg:gap-16">
-        <div className="max-w-feed">
+      {/* Category tabs */}
+      {tags.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap mb-8 pb-4 border-b border-wire">
+          <span
+            className="px-3 py-1.5 text-sm font-sans rounded-full"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-ink)' }}
+          >
+            All
+          </span>
+          {tags.map(t => (
+            <Link
+              key={t.slug}
+              to={`/tag/${t.slug}`}
+              className="px-3 py-1.5 text-sm font-sans rounded-full border border-wire text-faint hover:text-accent hover:border-accent transition-colors"
+            >
+              {t.name}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-12">
+        <div>
           {error && (
             <p className="text-sm text-faint py-8">Could not load posts. Is the server running?</p>
           )}
 
           {loading ? (
-            [...Array(5)].map((_, i) => <PostCardSkeleton key={i} />)
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => <PostCardSkeleton key={i} />)}
+            </div>
           ) : posts.length === 0 ? (
             <div className="py-16 text-center">
               <p className="font-serif text-xl text-faint mb-4">Nothing here yet.</p>
@@ -59,7 +83,9 @@ export default function Home() {
             </div>
           ) : (
             <>
-              {posts.map(post => <PostCard key={post.id} post={post} />)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                {posts.map(post => <PostCard key={post.id} post={post} />)}
+              </div>
 
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-3 mt-10 font-sans text-sm">
@@ -70,7 +96,7 @@ export default function Home() {
                   >
                     Previous
                   </button>
-                  <span className="text-faint">{page} / {totalPages}</span>
+                  <span className="text-faint">Page {page} of {totalPages}</span>
                   <button
                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
@@ -84,23 +110,9 @@ export default function Home() {
           )}
         </div>
 
-        {/* Index rail */}
-        {tags.length > 0 && (
-          <aside className="hidden lg:block pt-1">
-            <p className="text-xs font-sans tracking-[0.2em] uppercase text-faint mb-4">Index</p>
-            <div className="flex flex-col items-start gap-2.5 border-l border-wire pl-4">
-              {tags.map(t => (
-                <Link
-                  key={t.slug}
-                  to={`/tag/${t.slug}`}
-                  className="text-sm font-sans text-faint hover:text-signature transition-colors"
-                >
-                  {t.name}
-                </Link>
-              ))}
-            </div>
-          </aside>
-        )}
+        <aside className="hidden lg:block pt-1">
+          <TopContributors />
+        </aside>
       </div>
     </div>
   )

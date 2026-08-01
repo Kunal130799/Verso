@@ -26,8 +26,10 @@ export default function TagPage() {
 
   if (loading) {
     return (
-      <div className="max-w-feed mx-auto px-6 py-12">
-        {[...Array(4)].map((_, i) => <PostCardSkeleton key={i} />)}
+      <div className="max-w-wide mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => <PostCardSkeleton key={i} />)}
+        </div>
       </div>
     )
   }
@@ -42,7 +44,7 @@ export default function TagPage() {
   }
 
   return (
-    <div className="max-w-feed mx-auto px-6 py-12">
+    <div className="max-w-wide mx-auto px-6 py-12">
       <header className="mb-10">
         <p className="text-faint text-sm font-sans mb-1">Tag</p>
         <h1 className="font-serif text-3xl font-medium text-ink">#{tag?.name}</h1>
@@ -54,7 +56,9 @@ export default function TagPage() {
       {posts.length === 0 ? (
         <p className="font-serif text-xl text-faint py-8">No public posts with this tag yet.</p>
       ) : (
-        posts.map(post => <PostCard key={post.id} post={post} />)
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {posts.map(post => <PostCard key={post.id} post={post} />)}
+        </div>
       )}
     </div>
   )
