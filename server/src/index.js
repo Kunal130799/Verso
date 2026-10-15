@@ -10,6 +10,7 @@ import tagsRouter    from './routes/tags.js'
 import feedRouter    from './routes/feed.js'
 import bookmarksRouter from './routes/bookmarks.js'
 import { apiLimiter } from './middleware/rateLimit.js'
+import { publishDuePosts, startScheduler } from './lib/scheduler.js'
 
 const app  = express()
 const PORT = process.env.PORT || 3001
@@ -46,6 +47,7 @@ app.get('/health', async (_req, res) => {
     // so check it explicitly — otherwise a paused/unreachable DB reports "ok".
     const { error } = await supabase.from('profiles').select('id').limit(1)
     if (error) throw error
+    await publishDuePosts().catch(() => {})
     res.json({ status: 'ok' })
   } catch {
     res.status(503).json({ status: 'error' })
@@ -53,3 +55,4 @@ app.get('/health', async (_req, res) => {
 })
 
 app.listen(PORT, () => console.log(`Verso server → http://localhost:${PORT}`))
+startScheduler()

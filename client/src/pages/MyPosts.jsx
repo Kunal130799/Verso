@@ -75,8 +75,12 @@ export default function MyPosts() {
             <div key={post.id} className="py-5 flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <StatusChip status={post.status} />
-                  <span className="text-xs text-faint font-sans">{formatDate(post.updated_at)}</span>
+                  <StatusChip status={post.status === 'draft' && post.scheduled_at ? 'scheduled' : post.status} />
+                  <span className="text-xs text-faint font-sans">
+                    {post.status === 'draft' && post.scheduled_at
+                      ? `Publishes ${new Date(post.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`
+                      : formatDate(post.updated_at)}
+                  </span>
                   {post.view_count > 0 && (
                     <span className="text-xs text-faint font-sans">· {post.view_count} views</span>
                   )}

@@ -1,10 +1,16 @@
 const styles = {
   draft:   { bg: 'var(--surface)', color: 'var(--text-muted)', border: 'var(--border)' },
+  scheduled: { bg: 'var(--surface)', color: 'var(--accent)', border: 'var(--accent)' },
   private: { bg: 'var(--surface)', color: 'var(--text-muted)', border: 'var(--border)' },
   public:  { bg: 'var(--accent)',  color: 'var(--accent-ink)',   border: 'var(--accent)'  },
 }
 
 const icons = {
+  scheduled: (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+    </svg>
+  ),
   private: (
     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
       <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />

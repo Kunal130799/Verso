@@ -147,3 +147,8 @@ create policy "authors read own post views" on public.post_views
 
 -- 11. FULL-TEXT SEARCH — see supabase/migrations/2026-10-15-full-text-search.sql
 -- (posts.search generated tsvector + GIN index + search_posts() ranking RPC).
+
+-- 12. POST SCHEDULING + PREVIEW LINKS — see
+-- supabase/migrations/2026-10-15-scheduling-and-preview-links.sql
+-- (posts.scheduled_at, published by the API server every minute;
+-- posts.preview_token, a secret share link for unpublished posts).

@@ -154,6 +154,7 @@ function AppShell() {
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
               <Route path="/posts/:slug" element={<PostPage />} />
+              <Route path="/preview/:token" element={<PostPage />} />
               <Route path="/u/:username" element={<ProfilePage />} />
               <Route path="/profile/:username" element={<ProfileRedirect />} />
               <Route path="*" element={<NotFoundOrLegacyRedirect />} />

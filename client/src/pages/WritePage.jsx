@@ -3,9 +3,21 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
 import MarkdownEditor from '../components/MarkdownEditor'
+import PreviewLink from '../components/PreviewLink'
 import { resizeImage } from '../lib/resizeImage'
 
-const STATUSES = ['draft', 'private', 'public']
+// 'scheduled' is UI-only: on the server it's a draft with scheduled_at set.
+const STATUSES = ['draft', 'scheduled', 'private', 'public']
+
+// ISO timestamp ⇄ the local "YYYY-MM-DDTHH:mm" a datetime-local input uses
+function toLocalInput(iso) {
+  const d = new Date(iso)
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+}
+
+function formatWhen(iso) {
+  return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+}
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 // Shrinks the image, then validates the result: the 5 MB cap applies to the
@@ -27,6 +39,9 @@ export default function WritePage() {
   const [title, setTitle]     = useState('')
   const [content, setContent] = useState('')
   const [status, setStatus]   = useState('draft')
+  const [scheduleAt, setScheduleAt] = useState('')
+  const [scheduledFor, setScheduledFor] = useState(null)
+  const [published, setPublished] = useState(false)
   const [excerpt, setExcerpt] = useState('')
   const [tags, setTags]       = useState([])
   const [tagInput, setTagInput] = useState('')
@@ -49,7 +64,10 @@ export default function WritePage() {
         const post = await api.get(`/api/posts/${id}`, token)
         setTitle(post.title)
         setContent(post.content)
-        setStatus(post.status)
+        setStatus(post.status === 'draft' && post.scheduled_at ? 'scheduled' : post.status)
+        setScheduledFor(post.status === 'draft' ? post.scheduled_at : null)
+        if (post.scheduled_at) setScheduleAt(toLocalInput(post.scheduled_at))
+        setPublished(!!post.published_at)
         setExcerpt(post.excerpt || '')
         setTags(post.post_tags?.map(pt => pt.tags?.name).filter(Boolean) || [])
         setCover(post.cover_image_url || null)
@@ -108,13 +126,20 @@ export default function WritePage() {
 
   const handleSave = async (targetStatus = status) => {
     if (!title.trim()) { setError('Add a title first.'); return }
+    const scheduling = targetStatus === 'scheduled'
+    if (scheduling && !scheduleAt) { setError('Pick a date and time to publish.'); return }
     setSaving(true)
     setError(null)
     try {
       const token = await getToken()
       const postId = await ensurePost()
-      await api.put(`/api/posts/${postId}`, { title, content, status: targetStatus, excerpt, tags }, token)
+      const scheduled_at = scheduling ? new Date(scheduleAt).toISOString() : null
+      const post = await api.put(`/api/posts/${postId}`, {
+        title, content, excerpt, tags, status: scheduling ? 'draft' : targetStatus, scheduled_at,
+      }, token)
       setStatus(targetStatus)
+      setScheduledFor(post.scheduled_at || null)
+      if (post.published_at) setPublished(true)
       if (!id) navigate(`/write/${postId}`, { replace: true })
     } catch (err) {
       setError(err.message)
@@ -173,7 +198,7 @@ export default function WritePage() {
 
   const removeTag = name => setTags(tags.filter(t => t !== name))
 
-  const statusLabel = { draft: 'Save draft', private: 'Save private', public: 'Publish' }
+  const statusLabel = { draft: 'Save draft', scheduled: 'Schedule', private: 'Save private', public: 'Publish' }
 
   return (
     <div className="max-w-wide mx-auto px-6 py-10">
@@ -193,10 +218,20 @@ export default function WritePage() {
             aria-label="Post visibility"
             className="text-sm font-sans bg-surface border border-wire rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-accent"
           >
-            {STATUSES.map(s => (
+            {STATUSES.filter(s => s !== 'scheduled' || !published).map(s => (
               <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
             ))}
           </select>
+          {status === 'scheduled' && (
+            <input
+              type="datetime-local"
+              value={scheduleAt}
+              min={toLocalInput(new Date().toISOString())}
+              onChange={e => setScheduleAt(e.target.value)}
+              aria-label="Publish date and time"
+              className="text-sm font-sans bg-surface border border-wire rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-accent"
+            />
+          )}
           <button
             onClick={() => handleSave(status)}
             disabled={saving}
@@ -212,6 +247,11 @@ export default function WritePage() {
 
       {error && (
         <p className="text-sm text-red-500 mb-4 font-sans">{error}</p>
+      )}
+      {scheduledFor && status === 'scheduled' && (
+        <p className="text-sm text-faint mb-4 font-sans">
+          Scheduled — publishes automatically on {formatWhen(scheduledFor)}.
+        </p>
       )}
 
       {/* Cover image — click or drop a file */}
@@ -314,6 +354,11 @@ export default function WritePage() {
           </div>
         )}
       </div>
+
+      {/* Share an unpublished post */}
+      {status !== 'public' && (
+        <PreviewLink postId={postId} ensurePost={ensurePost} getToken={getToken} />
+      )}
 
       {/* View live */}
       {postId && status === 'public' && (
