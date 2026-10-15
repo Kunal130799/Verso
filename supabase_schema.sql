@@ -144,3 +144,6 @@ create policy "authors read own post views" on public.post_views
   for select using (
     exists (select 1 from public.posts where posts.id = post_views.post_id and posts.author_id = auth.uid())
   );
+
+-- 11. FULL-TEXT SEARCH — see supabase/migrations/2026-10-15-full-text-search.sql
+-- (posts.search generated tsvector + GIN index + search_posts() ranking RPC).
