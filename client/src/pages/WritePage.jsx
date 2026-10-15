@@ -5,6 +5,12 @@ import { api } from '../lib/api'
 import MarkdownEditor from '../components/MarkdownEditor'
 
 const STATUSES = ['draft', 'private', 'public']
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+
+function checkImage(file) {
+  if (!IMAGE_TYPES.includes(file.type)) throw new Error('Use a JPG, PNG, WebP, or GIF image.')
+  if (file.size > 5 * 1024 * 1024) throw new Error('Image must be under 5 MB.')
+}
 
 export default function WritePage() {
   const { id } = useParams()
@@ -20,10 +26,12 @@ export default function WritePage() {
   const [cover, setCover]     = useState(null)
   const [postId, setPostId]   = useState(id || null)
   const postIdRef             = useRef(id || null)
+  const creatingRef           = useRef(null)
   const [saving, setSaving]   = useState(false)
   const [autosaveStatus, setAutosaveStatus] = useState(null)
   const [error, setError]     = useState(null)
   const [coverUploading, setCoverUploading] = useState(false)
+  const [coverDragging, setCoverDragging] = useState(false)
 
   // Load existing post
   useEffect(() => {
@@ -45,18 +53,35 @@ export default function WritePage() {
     load()
   }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Returns the post's id, creating a draft first if there isn't one yet —
+  // so images can be added before the post has been saved or even titled.
+  // Concurrent callers (autosave + an upload) share one create request.
+  const ensurePost = async () => {
+    if (postIdRef.current) return postIdRef.current
+    if (!creatingRef.current) {
+      creatingRef.current = (async () => {
+        const token = await getToken()
+        const post = await api.post('/api/posts', {
+          title: title.trim() || 'Untitled draft', content, status: 'draft', excerpt, tags,
+        }, token)
+        postIdRef.current = post.id
+        setPostId(post.id)
+        return post.id
+      })().finally(() => { creatingRef.current = null })
+    }
+    return creatingRef.current
+  }
+
   // Autosave drafts
   useEffect(() => {
-    if (!title.trim()) return
+    if (!title.trim() && !postIdRef.current) return
 
     const timer = setTimeout(async () => {
       setAutosaveStatus('saving')
       try {
         const token = await getToken()
         if (!postIdRef.current) {
-          const post = await api.post('/api/posts', { title, content, status: 'draft', excerpt, tags }, token)
-          postIdRef.current = post.id
-          setPostId(post.id)
+          await ensurePost()
         } else {
           await api.put(`/api/posts/${postIdRef.current}`, { title, content, excerpt, tags }, token)
         }
@@ -80,17 +105,10 @@ export default function WritePage() {
     setError(null)
     try {
       const token = await getToken()
-      const payload = { title, content, status: targetStatus, excerpt, tags }
-      if (postIdRef.current) {
-        await api.put(`/api/posts/${postIdRef.current}`, payload, token)
-        setStatus(targetStatus)
-      } else {
-        const post = await api.post('/api/posts', payload, token)
-        postIdRef.current = post.id
-        setPostId(post.id)
-        setStatus(targetStatus)
-        navigate(`/write/${post.id}`, { replace: true })
-      }
+      const postId = await ensurePost()
+      await api.put(`/api/posts/${postId}`, { title, content, status: targetStatus, excerpt, tags }, token)
+      setStatus(targetStatus)
+      if (!id) navigate(`/write/${postId}`, { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -98,23 +116,17 @@ export default function WritePage() {
     }
   }
 
-  const handleCoverUpload = async e => {
-    const file = e.target.files[0]
+  const uploadCover = async file => {
     if (!file) return
-    if (!postIdRef.current) {
-      setError('Save the post first before uploading a cover.')
-      return
-    }
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    if (!allowed.includes(file.type)) { setError('Use a JPG, PNG, WebP, or GIF image.'); return }
-    if (file.size > 5 * 1024 * 1024) { setError('Image must be under 5 MB.'); return }
-
+    setError(null)
     setCoverUploading(true)
     try {
+      checkImage(file)
+      const postId = await ensurePost()
       const formData = new FormData()
       formData.append('cover', file)
       const token = await getToken()
-      const data = await api.upload(`/api/posts/${postIdRef.current}/cover`, formData, token)
+      const data = await api.upload(`/api/posts/${postId}/cover`, formData, token)
       setCover(data.cover_image_url)
     } catch (err) {
       setError(err.message)
@@ -124,15 +136,12 @@ export default function WritePage() {
   }
 
   const handleContentImageUpload = async file => {
-    if (!postIdRef.current) throw new Error('Save the post first before adding images.')
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    if (!allowed.includes(file.type)) throw new Error('Use a JPG, PNG, WebP, or GIF image.')
-    if (file.size > 5 * 1024 * 1024) throw new Error('Image must be under 5 MB.')
-
+    checkImage(file)
+    const postId = await ensurePost()
     const formData = new FormData()
     formData.append('image', file)
     const token = await getToken()
-    const data = await api.upload(`/api/posts/${postIdRef.current}/images`, formData, token)
+    const data = await api.upload(`/api/posts/${postId}/images`, formData, token)
     return data.url
   }
 
@@ -186,6 +195,29 @@ export default function WritePage() {
         <p className="text-sm text-red-500 mb-4 font-sans">{error}</p>
       )}
 
+      {/* Cover image — click or drop a file */}
+      <label
+        onDragOver={e => { e.preventDefault(); setCoverDragging(true) }}
+        onDragLeave={() => setCoverDragging(false)}
+        onDrop={e => { e.preventDefault(); setCoverDragging(false); uploadCover(e.dataTransfer.files[0]) }}
+        className={`focus-within:ring-2 focus-within:ring-accent relative flex items-center justify-center w-full mb-6 rounded-lg border border-dashed cursor-pointer overflow-hidden transition-colors ${
+          coverDragging ? 'border-accent bg-surface' : 'border-wire hover:border-accent'
+        } ${cover ? 'h-48' : 'h-24'}`}
+      >
+        {cover && <img src={cover} alt="" className="absolute inset-0 w-full h-full object-cover" />}
+        <span className={`relative inline-flex items-center gap-2 px-3 py-1.5 text-sm font-sans rounded-lg ${cover ? 'bg-paper text-ink' : 'text-faint'}`}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          {coverUploading ? 'Uploading…' : cover ? 'Change cover' : 'Add a cover image — click or drop one here'}
+        </span>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={e => { uploadCover(e.target.files[0]); e.target.value = '' }}
+          className="sr-only"
+          aria-label="Cover image"
+        />
+      </label>
+
       {/* Title */}
       <input
         type="text"
@@ -201,7 +233,6 @@ export default function WritePage() {
         value={content}
         onChange={setContent}
         onUploadImage={handleContentImageUpload}
-        imagesEnabled={!!postIdRef.current}
       />
 
       {/* Excerpt */}
@@ -252,24 +283,6 @@ export default function WritePage() {
             </button>
           </div>
         )}
-      </div>
-
-      {/* Cover image */}
-      <div className="mt-6">
-        <label className="block text-xs font-sans font-medium text-faint uppercase tracking-wide mb-2">
-          Cover image (optional)
-        </label>
-        {cover && (
-          <img src={cover} alt="Cover" className="w-full max-w-md h-40 object-cover rounded-lg border border-wire mb-3" />
-        )}
-        {!postIdRef.current && (
-          <p className="text-xs text-faint font-sans mb-2">Save the post first to upload a cover.</p>
-        )}
-        <label className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-sans border border-wire rounded-lg cursor-pointer transition-colors ${postIdRef.current ? 'text-faint hover:text-ink hover:border-accent' : 'opacity-40 cursor-not-allowed'}`}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          {coverUploading ? 'Uploading…' : cover ? 'Change cover' : 'Upload cover'}
-          <input type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" disabled={!postIdRef.current} />
-        </label>
       </div>
 
       {/* View live */}
