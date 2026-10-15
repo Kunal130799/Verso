@@ -1,38 +1,43 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { api } from './lib/api'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Sidebar from './components/Sidebar'
 import Home from './pages/Home'
-import SignIn from './pages/SignIn'
-import ConsentGate from './pages/ConsentGate'
-import WritePage from './pages/WritePage'
-import MyPosts from './pages/MyPosts'
-import PostPage from './pages/PostPage'
-import ProfilePage from './pages/ProfilePage'
-import TagPage from './pages/TagPage'
-import SearchResults from './pages/SearchResults'
-import Settings from './pages/Settings'
-import Bookmarks from './pages/Bookmarks'
-import About from './pages/About'
-import Terms from './pages/Terms'
-import Privacy from './pages/Privacy'
-import Guidelines from './pages/Guidelines'
-import AuthCallback from './pages/AuthCallback'
+
+// Every page but Home loads on demand, so the first visit doesn't download the
+// editor, markdown renderer and syntax highlighter up front.
+const SignIn = lazy(() => import('./pages/SignIn'))
+const ConsentGate = lazy(() => import('./pages/ConsentGate'))
+const WritePage = lazy(() => import('./pages/WritePage'))
+const MyPosts = lazy(() => import('./pages/MyPosts'))
+const PostPage = lazy(() => import('./pages/PostPage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const TagPage = lazy(() => import('./pages/TagPage'))
+const SearchResults = lazy(() => import('./pages/SearchResults'))
+const Settings = lazy(() => import('./pages/Settings'))
+const Bookmarks = lazy(() => import('./pages/Bookmarks'))
+const About = lazy(() => import('./pages/About'))
+const Terms = lazy(() => import('./pages/Terms'))
+const Privacy = lazy(() => import('./pages/Privacy'))
+const Guidelines = lazy(() => import('./pages/Guidelines'))
+const AuthCallback = lazy(() => import('./pages/AuthCallback'))
+
+function PageLoading() {
+  return (
+    <div className="flex justify-center items-center min-h-[60vh]">
+      <span className="text-faint text-sm">Loading…</span>
+    </div>
+  )
+}
 
 function ProtectedRoute({ children, skipConsentCheck = false }) {
   const { user, loading, profile } = useAuth()
   const location = useLocation()
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <span className="text-faint text-sm">Loading…</span>
-      </div>
-    )
-  }
+  if (loading) return <PageLoading />
 
   if (!user) return <Navigate to="/signin" state={{ from: location }} replace />
 
@@ -127,31 +132,33 @@ function AppShell() {
           <Sidebar tags={tags} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         )}
         <main id="main-content" ref={mainRef} tabIndex={-1} className="flex-1 min-w-0 focus:outline-none">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/guidelines" element={<Guidelines />} />
-            <Route path="/search" element={<SearchResults />} />
-            <Route path="/tag/:slug" element={<TagPage />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/consent" element={
-              <ProtectedRoute skipConsentCheck>
-                <ConsentGate />
-              </ProtectedRoute>
-            } />
-            <Route path="/write" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
-            <Route path="/write/:id" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
-            <Route path="/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
-            <Route path="/posts/:slug" element={<PostPage />} />
-            <Route path="/u/:username" element={<ProfilePage />} />
-            <Route path="/profile/:username" element={<ProfileRedirect />} />
-            <Route path="*" element={<NotFoundOrLegacyRedirect />} />
-          </Routes>
+          <Suspense fallback={<PageLoading />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/guidelines" element={<Guidelines />} />
+              <Route path="/search" element={<SearchResults />} />
+              <Route path="/tag/:slug" element={<TagPage />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/consent" element={
+                <ProtectedRoute skipConsentCheck>
+                  <ConsentGate />
+                </ProtectedRoute>
+              } />
+              <Route path="/write" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
+              <Route path="/write/:id" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
+              <Route path="/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
+              <Route path="/posts/:slug" element={<PostPage />} />
+              <Route path="/u/:username" element={<ProfilePage />} />
+              <Route path="/profile/:username" element={<ProfileRedirect />} />
+              <Route path="*" element={<NotFoundOrLegacyRedirect />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
       <Footer />

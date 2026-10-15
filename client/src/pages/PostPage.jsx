@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { useAuth } from '../context/AuthContext'
@@ -7,6 +7,7 @@ import { PostPageSkeleton } from '../components/LoadingSkeleton'
 import ListenBar from '../components/ListenBar'
 import ShareButton from '../components/ShareButton'
 import BookmarkButton from '../components/BookmarkButton'
+import ReadingProgress from '../components/ReadingProgress'
 import { markdownRemarkPlugins, markdownRehypePlugins, markdownComponents } from '../lib/markdown'
 import { setPageMeta } from '../lib/meta'
 
@@ -21,6 +22,7 @@ export default function PostPage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState(null)
+  const bodyRef = useRef(null)
 
   useEffect(() => {
     const load = async () => {
@@ -85,6 +87,7 @@ export default function PostPage() {
 
   return (
     <article>
+      <ReadingProgress targetRef={bodyRef} />
       {/* Hero */}
       <div className="max-w-wide mx-auto px-6 pt-8 pb-10 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-10 items-start">
         <div>
@@ -151,7 +154,7 @@ export default function PostPage() {
 
       {/* Body */}
       <div className="max-w-feed mx-auto px-6 py-10">
-        <div className="prose max-w-none">
+        <div ref={bodyRef} className="prose max-w-none">
           <ReactMarkdown
             remarkPlugins={markdownRemarkPlugins}
             rehypePlugins={markdownRehypePlugins}

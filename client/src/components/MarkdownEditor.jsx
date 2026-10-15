@@ -15,6 +15,16 @@ const CODE_LANGUAGES = [
   { value: 'sql', label: 'SQL' },
 ]
 
+// Rough prose word count: drops image tags and URLs so they don't inflate it.
+function countWords(md) {
+  const text = md
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\]\([^)]*\)/g, ' ')
+    .replace(/[#*_>`~\-[\]|]/g, ' ')
+    .trim()
+  return text ? text.split(/\s+/).length : 0
+}
+
 export default function MarkdownEditor({ value, onChange, placeholder = 'Write in Markdown… paste or drop images anywhere', onUploadImage }) {
   const [tab, setTab] = useState('write')
   const [uploading, setUploading] = useState(0)
@@ -142,6 +152,8 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
     insertAtCursor(opening + '\n```', opening.length)
   }
 
+  const words = countWords(value)
+
   const toolbar = (
     <div className="flex items-center gap-3 px-3 py-2 border-b border-wire bg-surface flex-wrap">
       <div className="flex items-center gap-1">
@@ -186,6 +198,10 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
       </button>
 
       <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImagePick} />
+
+      <span className="ml-auto text-xs font-sans text-faint tabular-nums" aria-live="off">
+        {words.toLocaleString()} {words === 1 ? 'word' : 'words'} · {Math.max(1, Math.round(words / 200))} min read
+      </span>
     </div>
   )
 

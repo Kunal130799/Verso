@@ -135,6 +135,18 @@ export default function WritePage() {
     }
   }
 
+  const removeCover = async () => {
+    if (!postIdRef.current) return
+    setError(null)
+    try {
+      const token = await getToken()
+      await api.delete(`/api/posts/${postIdRef.current}/cover`, token)
+      setCover(null)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   const handleContentImageUpload = async file => {
     checkImage(file)
     const postId = await ensurePost()
@@ -196,27 +208,38 @@ export default function WritePage() {
       )}
 
       {/* Cover image — click or drop a file */}
-      <label
-        onDragOver={e => { e.preventDefault(); setCoverDragging(true) }}
-        onDragLeave={() => setCoverDragging(false)}
-        onDrop={e => { e.preventDefault(); setCoverDragging(false); uploadCover(e.dataTransfer.files[0]) }}
-        className={`focus-within:ring-2 focus-within:ring-accent relative flex items-center justify-center w-full mb-6 rounded-lg border border-dashed cursor-pointer overflow-hidden transition-colors ${
-          coverDragging ? 'border-accent bg-surface' : 'border-wire hover:border-accent'
-        } ${cover ? 'h-48' : 'h-24'}`}
-      >
-        {cover && <img src={cover} alt="" className="absolute inset-0 w-full h-full object-cover" />}
-        <span className={`relative inline-flex items-center gap-2 px-3 py-1.5 text-sm font-sans rounded-lg ${cover ? 'bg-paper text-ink' : 'text-faint'}`}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          {coverUploading ? 'Uploading…' : cover ? 'Change cover' : 'Add a cover image — click or drop one here'}
-        </span>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={e => { uploadCover(e.target.files[0]); e.target.value = '' }}
-          className="sr-only"
-          aria-label="Cover image"
-        />
-      </label>
+      <div className="relative mb-6">
+        <label
+          onDragOver={e => { e.preventDefault(); setCoverDragging(true) }}
+          onDragLeave={() => setCoverDragging(false)}
+          onDrop={e => { e.preventDefault(); setCoverDragging(false); uploadCover(e.dataTransfer.files[0]) }}
+          className={`focus-within:ring-2 focus-within:ring-accent relative flex items-center justify-center w-full rounded-lg border border-dashed cursor-pointer overflow-hidden transition-colors ${
+            coverDragging ? 'border-accent bg-surface' : 'border-wire hover:border-accent'
+          } ${cover ? 'h-48' : 'h-24'}`}
+        >
+          {cover && <img src={cover} alt="" className="absolute inset-0 w-full h-full object-cover" />}
+          <span className={`relative inline-flex items-center gap-2 px-3 py-1.5 text-sm font-sans rounded-lg ${cover ? 'bg-paper text-ink' : 'text-faint'}`}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            {coverUploading ? 'Uploading…' : cover ? 'Change cover' : 'Add a cover image — click or drop one here'}
+          </span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={e => { uploadCover(e.target.files[0]); e.target.value = '' }}
+            className="sr-only"
+            aria-label="Cover image"
+          />
+        </label>
+        {cover && !coverUploading && (
+          <button
+            type="button"
+            onClick={removeCover}
+            className="absolute top-2 right-2 px-2.5 py-1 text-xs font-sans rounded-lg bg-paper text-faint hover:text-ink border border-wire transition-colors"
+          >
+            Remove
+          </button>
+        )}
+      </div>
 
       {/* Title */}
       <input

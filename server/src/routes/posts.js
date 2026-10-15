@@ -50,6 +50,35 @@ router.get('/', async (req, res) => {
   res.json({ posts: data, total: count, page, limit })
 })
 
+// GET /api/posts/trending — most-read public posts over the last 7 days,
+// from the per-view log. Must be before /:id.
+// ponytail: counts in JS from a capped scan of recent views — fine at this
+// traffic; move to a SQL group-by (RPC) if weekly views outgrow the cap.
+router.get('/trending', async (_req, res) => {
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: views, error } = await supabase
+    .from('post_views').select('post_id').gte('viewed_at', since).limit(20000)
+  if (error) return res.status(500).json({ error: error.message })
+
+  const counts = new Map()
+  for (const { post_id } of views) counts.set(post_id, (counts.get(post_id) || 0) + 1)
+  const ranked = [...counts].sort((a, b) => b[1] - a[1]).slice(0, 15).map(([id]) => id)
+  if (ranked.length === 0) return res.json({ posts: [] })
+
+  const { data: posts, error: postsErr } = await supabase
+    .from('posts')
+    .select('id, title, slug, author:profiles!author_id(username, display_name)')
+    .in('id', ranked)
+    .eq('status', 'public')
+  if (postsErr) return res.status(500).json({ error: postsErr.message })
+
+  const top = posts
+    .map(p => ({ ...p, week_views: counts.get(p.id) }))
+    .sort((a, b) => b.week_views - a.week_views)
+    .slice(0, 5)
+  res.json({ posts: top })
+})
+
 // GET /api/posts/by-slug/:slug — must be before /:id
 router.get('/by-slug/:slug', optionalAuth, async (req, res) => {
   const { slug } = req.params
@@ -223,6 +252,18 @@ router.post('/:id/cover', requireAuth, writeLimiter, upload.single('cover'), asy
   await supabase.from('posts').update({ cover_image_url: publicUrl }).eq('id', req.params.id)
 
   res.json({ cover_image_url: publicUrl })
+})
+
+// DELETE /api/posts/:id/cover — remove the cover (the file stays in storage)
+router.delete('/:id/cover', requireAuth, async (req, res) => {
+  const { data: post } = await supabase
+    .from('posts').select('id, author_id').eq('id', req.params.id).maybeSingle()
+
+  if (!post || post.author_id !== req.user.id) return res.status(404).json({ error: 'Not found' })
+
+  const { error } = await supabase.from('posts').update({ cover_image_url: null }).eq('id', req.params.id)
+  if (error) return res.status(500).json({ error: error.message })
+  res.json({ cover_image_url: null })
 })
 
 // Up to 3 public posts sharing a tag with `post`, backfilled with the latest public posts.

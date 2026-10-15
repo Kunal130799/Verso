@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import PostCard from '../components/PostCard'
 import TopContributors from '../components/TopContributors'
+import Trending from '../components/Trending'
 import { PostCardSkeleton } from '../components/LoadingSkeleton'
 import { setPageMeta } from '../lib/meta'
 
@@ -117,7 +118,8 @@ export default function Home() {
           )}
         </div>
 
-        <aside className="hidden lg:block pt-1">
+        <aside className="hidden lg:flex flex-col gap-10 pt-1">
+          <Trending />
           <TopContributors />
         </aside>
       </div>
