@@ -53,7 +53,7 @@ router.put('/me', requireAuth, async (req, res) => {
 router.get('/my-posts', requireAuth, async (req, res) => {
   const { data, error } = await supabase
     .from('posts')
-    .select('id, title, slug, excerpt, status, reading_time_minutes, view_count, created_at, updated_at, published_at')
+    .select('id, title, slug, excerpt, status, reading_time_minutes, view_count, created_at, updated_at, published_at, scheduled_at')
     .eq('author_id', req.user.id)
     .order('updated_at', { ascending: false })
 

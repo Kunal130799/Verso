@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { randomUUID } from 'node:crypto'
 import multer from 'multer'
 import { supabase } from '../lib/supabase.js'
 import { requireAuth, optionalAuth } from '../middleware/auth.js'
@@ -10,7 +11,7 @@ const router = Router()
 // generated full-text `search` vector — large and useless to the client.
 const POST_COLUMNS =
   'id, author_id, title, slug, content, excerpt, cover_image_url, status, ' +
-  'reading_time_minutes, view_count, created_at, updated_at, published_at'
+  'reading_time_minutes, view_count, created_at, updated_at, published_at, scheduled_at'
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } })
 
 function toSlug(title) {
@@ -83,6 +84,25 @@ router.get('/trending', async (_req, res) => {
     .sort((a, b) => b.week_views - a.week_views)
     .slice(0, 5)
   res.json({ posts: top })
+})
+
+// GET /api/posts/preview/:token — read a post through its secret preview
+// link, whatever its status. Must be before /:id.
+router.get('/preview/:token', async (req, res) => {
+  const { token } = req.params
+  if (!/^[0-9a-f-]{36}$/i.test(token)) return res.status(404).json({ error: 'Not found' })
+
+  const { data: post, error } = await supabase
+    .from('posts')
+    .select(`${POST_COLUMNS}, profiles!author_id(id, username, display_name, avatar_url, bio), post_tags(tags(id, name, slug))`)
+    .eq('preview_token', token)
+    .maybeSingle()
+
+  if (error || !post) return res.status(404).json({ error: 'Not found' })
+  post.related = []
+  post.is_bookmarked = false
+  post.is_preview = true
+  res.json(post)
 })
 
 // GET /api/posts/by-slug/:slug — must be before /:id
@@ -179,8 +199,24 @@ router.put('/:id', requireAuth, async (req, res) => {
 
   if (!existing || existing.author_id !== req.user.id) return res.status(404).json({ error: 'Not found' })
 
-  const { title, content, status, excerpt, tags } = req.body
+  const { title, content, status, excerpt, tags, scheduled_at } = req.body
   const updates = {}
+
+  // Scheduling: a scheduled post is a draft with scheduled_at set — the
+  // scheduler publishes it when the time comes. null unschedules.
+  if (scheduled_at !== undefined) {
+    if (scheduled_at === null) {
+      updates.scheduled_at = null
+    } else {
+      const when = new Date(scheduled_at)
+      if (Number.isNaN(when.getTime())) return res.status(400).json({ error: 'Invalid schedule time' })
+      if (when.getTime() < Date.now() - 60 * 1000) return res.status(400).json({ error: 'Pick a time in the future' })
+      if (existing.status === 'public') return res.status(400).json({ error: 'This post is already published' })
+      if (status !== undefined && status !== 'draft') return res.status(400).json({ error: 'Only drafts can be scheduled' })
+      updates.scheduled_at = when.toISOString()
+    }
+  }
+
   if (title?.trim()) {
     updates.title = title.trim()
     // Drafts are often created before the title is final (autosave, or an
@@ -192,6 +228,7 @@ router.put('/:id', requireAuth, async (req, res) => {
   if (excerpt  !== undefined) updates.excerpt = excerpt
   if (status   !== undefined) {
     updates.status = status
+    if (status !== 'draft') updates.scheduled_at = null
     if (status === 'public' && existing.status !== 'public') updates.published_at = new Date().toISOString()
   }
 
@@ -258,6 +295,40 @@ router.post('/:id/cover', requireAuth, writeLimiter, upload.single('cover'), asy
   await supabase.from('posts').update({ cover_image_url: publicUrl }).eq('id', req.params.id)
 
   res.json({ cover_image_url: publicUrl })
+})
+
+// Preview link management — author only.
+async function ownPost(req, res) {
+  const { data: post } = await supabase
+    .from('posts').select('id, author_id, preview_token').eq('id', req.params.id).maybeSingle()
+  if (!post || post.author_id !== req.user.id) { res.status(404).json({ error: 'Not found' }); return null }
+  return post
+}
+
+// GET /api/posts/:id/preview-link — current link token, or null
+router.get('/:id/preview-link', requireAuth, async (req, res) => {
+  const post = await ownPost(req, res)
+  if (post) res.json({ token: post.preview_token })
+})
+
+// POST /api/posts/:id/preview-link — create the link (or return the existing one)
+router.post('/:id/preview-link', requireAuth, async (req, res) => {
+  const post = await ownPost(req, res)
+  if (!post) return
+  if (post.preview_token) return res.json({ token: post.preview_token })
+  const token = randomUUID()
+  const { error } = await supabase.from('posts').update({ preview_token: token }).eq('id', post.id)
+  if (error) return res.status(500).json({ error: error.message })
+  res.json({ token })
+})
+
+// DELETE /api/posts/:id/preview-link — revoke; the old link stops working
+router.delete('/:id/preview-link', requireAuth, async (req, res) => {
+  const post = await ownPost(req, res)
+  if (!post) return
+  const { error } = await supabase.from('posts').update({ preview_token: null }).eq('id', post.id)
+  if (error) return res.status(500).json({ error: error.message })
+  res.json({ token: null })
 })
 
 // DELETE /api/posts/:id/cover — remove the cover (the file stays in storage)

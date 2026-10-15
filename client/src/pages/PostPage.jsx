@@ -16,7 +16,8 @@ function formatDate(iso) {
 }
 
 export default function PostPage() {
-  const { slug } = useParams()
+  // Reached either by slug, or by a secret draft-preview link (/preview/:token)
+  const { slug, token: previewToken } = useParams()
   const { user, getToken } = useAuth()
   const [post, setPost] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -28,11 +29,20 @@ export default function PostPage() {
     const load = async () => {
       try {
         const token = await getToken()
-        const data = await api.get(
-          `/api/posts/by-slug/${encodeURIComponent(slug)}`,
-          token
-        )
+        const data = previewToken
+          ? await api.get(`/api/posts/preview/${encodeURIComponent(previewToken)}`)
+          : await api.get(`/api/posts/by-slug/${encodeURIComponent(slug)}`, token)
         setPost(data)
+        if (data.is_preview) {
+          // keep shared drafts out of search engines
+          let robots = document.querySelector('meta[name="robots"]')
+          if (!robots) {
+            robots = document.createElement('meta')
+            robots.setAttribute('name', 'robots')
+            document.head.appendChild(robots)
+          }
+          robots.setAttribute('content', 'noindex')
+        }
         setPageMeta({
           title: `${data.title} — Verso`,
           description: data.excerpt || data.title,
@@ -47,11 +57,14 @@ export default function PostPage() {
       }
     }
     load()
-  }, [slug]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [slug, previewToken]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Drop the noindex added for a preview when leaving the page
+  useEffect(() => () => document.querySelector('meta[name="robots"]')?.remove(), [])
 
   // Increment view count once per session
   useEffect(() => {
-    if (!post || post.status !== 'public') return
+    if (!post || post.status !== 'public' || post.is_preview) return
     const key = `viewed-${post.id}`
     if (sessionStorage.getItem(key)) return
     sessionStorage.setItem(key, '1')
@@ -88,6 +101,16 @@ export default function PostPage() {
   return (
     <article>
       <ReadingProgress targetRef={bodyRef} />
+      {post.is_preview && post.status !== 'public' && (
+        <div className="max-w-wide mx-auto px-6 pt-6">
+          <p
+            className="text-sm font-sans rounded-lg border px-4 py-2.5"
+            style={{ borderColor: 'var(--accent)', color: 'var(--text)', backgroundColor: 'var(--surface)' }}
+          >
+            <strong className="font-semibold">Preview</strong> — this post isn't published yet. Please don't share this link widely.
+          </p>
+        </div>
+      )}
       {/* Hero */}
       <div className="max-w-wide mx-auto px-6 pt-8 pb-10 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-10 items-start">
         <div>
@@ -121,8 +144,12 @@ export default function PostPage() {
                   Edit
                 </Link>
               )}
-              <BookmarkButton postId={post.id} initialBookmarked={post.is_bookmarked} />
-              <ShareButton title={post.title} url={`${window.location.origin}/posts/${post.slug}`} />
+              {!post.is_preview && (
+                <>
+                  <BookmarkButton postId={post.id} initialBookmarked={post.is_bookmarked} />
+                  <ShareButton title={post.title} url={`${window.location.origin}/posts/${post.slug}`} />
+                </>
+              )}
             </div>
           </div>
           <ListenBar title={post.title} content={post.content} />
