@@ -3,13 +3,20 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../lib/api'
 import MarkdownEditor from '../components/MarkdownEditor'
+import { resizeImage } from '../lib/resizeImage'
 
 const STATUSES = ['draft', 'private', 'public']
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
-function checkImage(file) {
-  if (!IMAGE_TYPES.includes(file.type)) throw new Error('Use a JPG, PNG, WebP, or GIF image.')
-  if (file.size > 5 * 1024 * 1024) throw new Error('Image must be under 5 MB.')
+// Shrinks the image, then validates the result: the 5 MB cap applies to the
+// resized file, so large phone photos are fine, and formats the browser can
+// decode but we don't store (e.g. iPhone HEIC in Safari) arrive as WebP.
+async function prepareImage(file) {
+  if (!file.type.startsWith('image/')) throw new Error('Use a JPG, PNG, WebP, or GIF image.')
+  const resized = await resizeImage(file)
+  if (!IMAGE_TYPES.includes(resized.type)) throw new Error('Use a JPG, PNG, WebP, or GIF image.')
+  if (resized.size > 5 * 1024 * 1024) throw new Error('Image must be under 5 MB.')
+  return resized
 }
 
 export default function WritePage() {
@@ -121,10 +128,10 @@ export default function WritePage() {
     setError(null)
     setCoverUploading(true)
     try {
-      checkImage(file)
+      const image = await prepareImage(file)
       const postId = await ensurePost()
       const formData = new FormData()
-      formData.append('cover', file)
+      formData.append('cover', image)
       const token = await getToken()
       const data = await api.upload(`/api/posts/${postId}/cover`, formData, token)
       setCover(data.cover_image_url)
@@ -148,10 +155,10 @@ export default function WritePage() {
   }
 
   const handleContentImageUpload = async file => {
-    checkImage(file)
+    const image = await prepareImage(file)
     const postId = await ensurePost()
     const formData = new FormData()
-    formData.append('image', file)
+    formData.append('image', image)
     const token = await getToken()
     const data = await api.upload(`/api/posts/${postId}/images`, formData, token)
     return data.url
