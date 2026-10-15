@@ -42,7 +42,10 @@ app.use(feedRouter)
 
 app.get('/health', async (_req, res) => {
   try {
-    await supabase.from('profiles').select('id').limit(1)
+    // supabase-js returns query failures as { error } rather than throwing,
+    // so check it explicitly — otherwise a paused/unreachable DB reports "ok".
+    const { error } = await supabase.from('profiles').select('id').limit(1)
+    if (error) throw error
     res.json({ status: 'ok' })
   } catch {
     res.status(503).json({ status: 'error' })
