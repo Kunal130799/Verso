@@ -23,7 +23,10 @@ export const api = {
     if (token) headers['Authorization'] = `Bearer ${token}`
     return fetch(`${BASE}${path}`, { method: 'POST', headers, body: formData })
       .then(async res => {
-        if (!res.ok) throw new Error('Upload failed')
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.error || 'Upload failed')
+        }
         return res.json()
       })
   },

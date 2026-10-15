@@ -8,7 +8,7 @@ const router = Router()
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } })
 
 function toSlug(title) {
-  return title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 80)
+  return title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 80) || 'post'
 }
 
 function readingTime(content) {
@@ -140,13 +140,19 @@ router.post('/', requireAuth, writeLimiter, async (req, res) => {
 // PUT /api/posts/:id
 router.put('/:id', requireAuth, async (req, res) => {
   const { data: existing } = await supabase
-    .from('posts').select('id, author_id, status').eq('id', req.params.id).maybeSingle()
+    .from('posts').select('id, author_id, status, published_at').eq('id', req.params.id).maybeSingle()
 
   if (!existing || existing.author_id !== req.user.id) return res.status(404).json({ error: 'Not found' })
 
   const { title, content, status, excerpt, tags } = req.body
   const updates = {}
-  if (title    !== undefined) updates.title = title.trim()
+  if (title?.trim()) {
+    updates.title = title.trim()
+    // Drafts are often created before the title is final (autosave, or an
+    // image added first) — keep the slug in step until the post is first
+    // published, then freeze it so shared links don't break.
+    if (!existing.published_at) updates.slug = await uniqueSlug(toSlug(updates.title), existing.id)
+  }
   if (content  !== undefined) { updates.content = content; updates.reading_time_minutes = readingTime(content) }
   if (excerpt  !== undefined) updates.excerpt = excerpt
   if (status   !== undefined) {

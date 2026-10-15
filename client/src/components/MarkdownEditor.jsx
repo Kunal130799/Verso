@@ -15,9 +15,10 @@ const CODE_LANGUAGES = [
   { value: 'sql', label: 'SQL' },
 ]
 
-export default function MarkdownEditor({ value, onChange, placeholder = 'Write in Markdown…', onUploadImage, imagesEnabled }) {
+export default function MarkdownEditor({ value, onChange, placeholder = 'Write in Markdown… paste or drop images anywhere', onUploadImage }) {
   const [tab, setTab] = useState('write')
-  const [uploading, setUploading] = useState(false)
+  const [uploading, setUploading] = useState(0)
+  const [dragging, setDragging] = useState(false)
   const [uploadError, setUploadError] = useState(null)
   const [codeLang, setCodeLang] = useState('javascript')
   const activeTextareaRef = useRef(null)
@@ -25,10 +26,10 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
 
   const insertAtCursor = (text, cursorOffset = text.length) => {
     const el = activeTextareaRef.current
-    if (!el) { onChange(`${value}\n${text}\n`); return }
+    if (!el) { onChange(v => `${v}\n${text}\n`); return }
     const start = el.selectionStart
     const end = el.selectionEnd
-    onChange(value.slice(0, start) + text + value.slice(end))
+    onChange(v => v.slice(0, start) + text + v.slice(end))
     requestAnimationFrame(() => {
       el.focus()
       el.selectionStart = el.selectionEnd = start + cursorOffset
@@ -80,20 +81,60 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
     })
   }
 
-  const handleImagePick = async e => {
-    const file = e.target.files[0]
-    e.target.value = ''
-    if (!file || !onUploadImage) return
-    setUploading(true)
+  // Drops a placeholder at the cursor straight away, then swaps in the real
+  // image once it's uploaded — the writer can keep typing in the meantime.
+  // `onChange` must accept an updater function (a useState setter does).
+  const uploadImages = async files => {
+    const images = [...files].filter(f => f.type.startsWith('image/'))
+    if (!images.length || !onUploadImage) return
     setUploadError(null)
-    try {
-      const url = await onUploadImage(file)
-      insertAtCursor(`![](${url})`)
-    } catch (err) {
-      setUploadError(err.message || 'Upload failed')
-    } finally {
-      setUploading(false)
+    const items = images.map(file => {
+      const alt = file.name.replace(/\.[^.]+$/, '').replace(/[[\]]/g, '') || 'image'
+      const token = `![Uploading ${alt}…](#uploading-${Date.now()}-${Math.random().toString(36).slice(2, 8)})`
+      return { file, alt, token }
+    })
+    insertAtCursor(items.map(i => `\n${i.token}\n`).join(''))
+    await Promise.all(items.map(async ({ file, alt, token }) => {
+      setUploading(n => n + 1)
+      try {
+        const url = await onUploadImage(file)
+        onChange(v => v.replace(token, `![${alt}](${url})`))
+      } catch (err) {
+        onChange(v => v.replace(`\n${token}\n`, '').replace(token, ''))
+        setUploadError(err.message || 'Upload failed')
+      } finally {
+        setUploading(n => n - 1)
+      }
+    }))
+  }
+
+  const handleImagePick = e => {
+    const files = [...e.target.files]
+    e.target.value = ''
+    uploadImages(files)
+  }
+
+  const handlePaste = e => {
+    const files = e.clipboardData?.files
+    if (files?.length && [...files].some(f => f.type.startsWith('image/'))) {
+      e.preventDefault()
+      uploadImages(files)
     }
+  }
+
+  const handleDrop = e => {
+    setDragging(false)
+    if (!e.dataTransfer?.files?.length) return
+    e.preventDefault()
+    activeTextareaRef.current = e.target
+    uploadImages(e.dataTransfer.files)
+  }
+
+  const dropProps = {
+    onPaste: handlePaste,
+    onDrop: handleDrop,
+    onDragOver: e => { if (e.dataTransfer?.types?.includes('Files')) { e.preventDefault(); setDragging(true) } },
+    onDragLeave: () => setDragging(false),
   }
 
   const insertCodeBlock = () => {
@@ -117,9 +158,8 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
-        disabled={!imagesEnabled || uploading}
-        className="inline-flex items-center gap-1.5 text-xs font-sans text-faint hover:text-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        title={imagesEnabled ? 'Insert image' : 'Save the post first to add images'}
+        className="inline-flex items-center gap-1.5 text-xs font-sans text-faint hover:text-ink transition-colors"
+        title="Insert image — you can also paste or drag images into the editor"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
         {uploading ? 'Uploading…' : 'Insert image'}
@@ -145,7 +185,7 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
         Insert code block
       </button>
 
-      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImagePick} />
+      <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImagePick} />
     </div>
   )
 
@@ -181,9 +221,10 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
               value={value}
               onChange={e => onChange(e.target.value)}
               onFocus={e => (activeTextareaRef.current = e.target)}
+              {...dropProps}
               placeholder={placeholder}
               aria-label="Post content in Markdown"
-              className="focus-ring w-full h-full p-5 font-mono text-sm resize-none bg-surface text-ink focus:outline-none leading-relaxed"
+              className={`focus-ring w-full h-full p-5 font-mono text-sm resize-none ${dragging ? 'bg-paper' : 'bg-surface'} text-ink focus:outline-none leading-relaxed`}
               style={{ fontFamily: 'ui-monospace, Fira Code, monospace' }}
             />
           </div>
@@ -214,10 +255,11 @@ export default function MarkdownEditor({ value, onChange, placeholder = 'Write i
             value={value}
             onChange={e => onChange(e.target.value)}
             onFocus={e => (activeTextareaRef.current = e.target)}
+            {...dropProps}
             placeholder={placeholder}
             aria-label="Post content in Markdown"
             rows={20}
-            className="focus-ring w-full p-5 font-mono text-sm resize-none bg-surface text-ink focus:outline-none leading-relaxed"
+            className={`focus-ring w-full p-5 font-mono text-sm resize-none ${dragging ? 'bg-paper' : 'bg-surface'} text-ink focus:outline-none leading-relaxed`}
             style={{ fontFamily: 'ui-monospace, Fira Code, monospace' }}
           />
         ) : (
