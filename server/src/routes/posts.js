@@ -5,6 +5,12 @@ import { requireAuth, optionalAuth } from '../middleware/auth.js'
 import { writeLimiter, viewLimiter } from '../middleware/rateLimit.js'
 
 const router = Router()
+
+// Explicit post columns rather than '*', which would also return the
+// generated full-text `search` vector — large and useless to the client.
+const POST_COLUMNS =
+  'id, author_id, title, slug, content, excerpt, cover_image_url, status, ' +
+  'reading_time_minutes, view_count, created_at, updated_at, published_at'
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } })
 
 function toSlug(title) {
@@ -85,7 +91,7 @@ router.get('/by-slug/:slug', optionalAuth, async (req, res) => {
 
   const { data: post, error } = await supabase
     .from('posts')
-    .select('*, profiles!author_id(id, username, display_name, avatar_url, bio), post_tags(tags(id, name, slug))')
+    .select(`${POST_COLUMNS}, profiles!author_id(id, username, display_name, avatar_url, bio), post_tags(tags(id, name, slug))`)
     .eq('slug', slug)
     .maybeSingle()
 
@@ -124,7 +130,7 @@ router.get('/my', requireAuth, async (req, res) => {
 router.get('/:id', optionalAuth, async (req, res) => {
   const { data: post, error } = await supabase
     .from('posts')
-    .select('*, profiles!author_id(id, username, display_name, avatar_url, bio), post_tags(tags(id, name, slug))')
+    .select(`${POST_COLUMNS}, profiles!author_id(id, username, display_name, avatar_url, bio), post_tags(tags(id, name, slug))`)
     .eq('id', req.params.id)
     .maybeSingle()
 
@@ -156,7 +162,7 @@ router.post('/', requireAuth, writeLimiter, async (req, res) => {
       reading_time_minutes: readingTime(content),
       published_at: status === 'public' ? new Date().toISOString() : null,
     })
-    .select()
+    .select(POST_COLUMNS)
     .single()
 
   if (error) return res.status(500).json({ error: error.message })
@@ -190,7 +196,7 @@ router.put('/:id', requireAuth, async (req, res) => {
   }
 
   const { data: post, error } = await supabase
-    .from('posts').update(updates).eq('id', req.params.id).select().single()
+    .from('posts').update(updates).eq('id', req.params.id).select(POST_COLUMNS).single()
 
   if (error) return res.status(500).json({ error: error.message })
 
